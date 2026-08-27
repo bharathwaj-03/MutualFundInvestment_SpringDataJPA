@@ -1,0 +1,117 @@
+✅ Phase 1
+MODEL / JPA ENTITIES
+completed
+
+        ↓
+
+✅ Phase 2
+build.gradle.kts
+DataSource
+Hibernate
+EntityManagerFactory
+JpaTransactionManager
+Spring Data configuration
+web.xml
+completed
+
+        ↓
+
+➡️ Phase 3 NEXT
+REPOSITORY PACKAGE
+
+        ↓
+
+Phase 4
+SERVICES
+
+        ↓
+
+Phase 5
+REST CONTROLLERS
+
+        ↓
+
+Phase 6
+GLOBAL EXCEPTION HANDLING
+
+        ↓
+
+Phase 7
+POSTMAN + COMPLETE APPLICATION TEST
+
+        ↓
+
+LAST
+JUnit + Mockito + MockMvc
+
+POST /api/redemptions/calculate
+→ preview only
+→ null ID is correct
+
+POST /api/redemptions
+→ real redemption
+→ RED371265 generated
+→ return RedemptionResponse DTO
+
+GET /api/redemptions/RED371265
+→ fetch with JOIN FETCH
+→ return RedemptionResponse DTO
+
+GET /api/redemptions/investor/INV708442
+→ fetch with JOIN FETCH
+→ map list to RedemptionResponse DTOs
+
+/api/redemptions/RED371265
+
+
+src/test/java/.../
+├── model          ✅
+├── services       ✅
+├── controller     ✅
+├── exception      ✅
+├── dependency     ← NEXT
+├── repository
+├── interceptor
+├── utilities
+└── integration
+
+
+{{baseUrl}}/api/admin/fund-category-performance
+
+This comparison will probably make all your controller tests easier:
+
+Postman	Controller test
+Send GET	mockMvc.perform(get(...))
+Send POST	mockMvc.perform(post(...))
+Send PUT	mockMvc.perform(put(...))
+Send DELETE	mockMvc.perform(delete(...))
+Check HTTP status	status().isOk()
+Look at JSON body	jsonPath()
+Login/session cookie	MockHttpSession
+Request JSON body	.content(...)
+Content-Type	.contentType(...)
+
+What services are mocked?
+
+↓
+
+What fake response did I configure
+using when().thenReturn()?
+
+↓
+
+What HTTP request did MockMvc send?
+
+↓
+
+What status am I expecting?
+
+↓
+
+What JSON fields am I checking?
+
+controller testing
+when()    → prepare fake behavior
+service   → execute actual business logic
+assert    → check result/state
+verify()  → check interaction with dependency
