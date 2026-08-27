@@ -1,10 +1,12 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorProfileUpdateRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.InvestorProfileResponse;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor.I_InvestorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * REST controller that exposes investor profile retrieval and update APIs.
@@ -53,12 +55,23 @@ public class InvestorProfileController {
      * @return HTTP response or data produced by the endpoint
      */
     @PutMapping("/{investorId}")
-    public ResponseEntity<Investor> updateProfile(@PathVariable String investorId, @RequestBody Investor investor) {
-        investor.setUserId(investorId);
-        boolean updated = investorService.updateInvestorProfile(investor);
-        if (!updated) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(investorService.getInvestorByUserId(investorId));
+    public ResponseEntity<
+            InvestorProfileResponse>
+    updateProfile(
+            @PathVariable
+            String investorId,
+
+            @Valid
+            @RequestBody
+            InvestorProfileUpdateRequest request) {
+
+
+        return ResponseEntity.ok(
+                investorService
+                        .updateInvestorProfile(
+                                investorId,
+                                request
+                        )
+        );
     }
 }

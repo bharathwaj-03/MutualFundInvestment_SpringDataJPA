@@ -1,9 +1,12 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.AdminProfileUpdateRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Admin;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.admin.I_AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * REST controller that exposes administrator profile retrieval and update APIs.
@@ -39,16 +42,25 @@ public class AdminProfileController {
      * Updates profile information for the requested identifier.
      *
      * @param adminId value supplied to this endpoint
-     * @param admin value supplied to this endpoint
      * @return HTTP response or data produced by the endpoint
      */
     @PutMapping("/{adminId}")
-    public ResponseEntity<Admin> updateProfile(@PathVariable String adminId, @RequestBody Admin admin) {
-        admin.setUserId(adminId);
-        boolean updated = adminService.updateAdminProfile(admin);
-        if (!updated) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(adminService.getAdminByUserId(adminId));
+    public ResponseEntity<Admin>
+    updateProfile(
+            @PathVariable
+            String adminId,
+
+            @Valid
+            @RequestBody
+            AdminProfileUpdateRequest request) {
+
+
+        return ResponseEntity.ok(
+                adminService
+                        .updateAdminProfile(
+                                adminId,
+                                request
+                        )
+        );
     }
 }

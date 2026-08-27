@@ -1,8 +1,11 @@
-package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor;
+package com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .services.investor;
 
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorRegistrationRequest;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.NomineeRegistrationRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.AuthenticationException;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.InvalidRequestException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotFoundException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.portfolio.Portfolio;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
@@ -16,76 +19,95 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-class  InvestorServiceTest {
+
+class InvestorServiceTest {
 
     @Mock
-    private InvestorRepository investorRepository;
+    private InvestorRepository
+            investorRepository;
+
 
     @Mock
-    private NomineeRepository nomineeRepository;
+    private NomineeRepository
+            nomineeRepository;
+
 
     @Mock
-    private I_PortfolioService portfolioService;
+    private I_PortfolioService
+            portfolioService;
 
-    private InvestorService investorService;
+
+    private InvestorService
+            investorService;
+
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        investorService = new InvestorService(
-                investorRepository,
-                nomineeRepository,
-                portfolioService
-        );
+
+        MockitoAnnotations
+                .openMocks(this);
+
+
+        investorService =
+                new InvestorService(
+                        investorRepository,
+                        nomineeRepository,
+                        portfolioService
+                );
     }
 
-    private Investor validInvestor() {
 
-        Investor investor =
-                new Investor();
+    /**
+     * Creates a valid registration request for service tests.
+     *
+     * Request-format validation itself is tested through
+     * controller tests using @Valid.
+     */
+    private InvestorRegistrationRequest
+    validRegistrationRequest() {
 
-        investor.setName(
+        InvestorRegistrationRequest request =
+                new InvestorRegistrationRequest();
+
+
+        request.setName(
                 "Bharath Kumar"
         );
 
-        investor.setEmail(
+        request.setEmail(
                 "bharath@example.com"
         );
 
-        investor.setPhoneNumber(
+        request.setPhoneNumber(
                 "9876543210"
         );
 
-        investor.setPassword(
+        request.setPassword(
                 "Password@1"
         );
 
-        investor.setAge(
-                25
-        );
-
-        investor.setPanNumber(
+        request.setPanNumber(
                 "ABCDE1234F"
         );
 
-        investor.setAccountNumber(
-                "12345678901298989"
+        request.setAccountNumber(
+                "123456789012"
         );
 
-        investor.setRiskProfile(
+        request.setRiskProfile(
                 "MODERATE"
         );
 
 
-        Nominee nominee =
-                new Nominee();
+        NomineeRegistrationRequest nominee =
+                new NomineeRegistrationRequest();
 
         nominee.setName(
                 "Rahul Kumar"
@@ -104,73 +126,206 @@ class  InvestorServiceTest {
         );
 
         nominee.setAccountNumber(
-                "12345678901298988"
+                "123456789012"
         );
 
 
-        investor.setNominee(
+        request.setNominee(
                 nominee
         );
 
 
-        return investor;
+        return request;
     }
 
+
     @Test
-    void shouldValidateCorrectInvestor() {
+    void shouldRegisterValidInvestor() {
 
-        Investor investor =
-                validInvestor();
+        InvestorRegistrationRequest request =
+                validRegistrationRequest();
 
-        Map<String, String> errors =
+
+        when(
+                nomineeRepository
+                        .save(
+                                any(Nominee.class)
+                        )
+        )
+                .thenAnswer(
+                        invocation ->
+                                invocation
+                                        .getArgument(0)
+                );
+
+
+        when(
+                investorRepository
+                        .save(
+                                any(Investor.class)
+                        )
+        )
+                .thenAnswer(
+                        invocation ->
+                                invocation
+                                        .getArgument(0)
+                );
+
+
+        when(
+                portfolioService
+                        .createPortfolio(
+                                anyString()
+                        )
+        )
+                .thenReturn(
+                        new Portfolio()
+                );
+
+
+        Investor registeredInvestor =
                 investorService
-                        .validateInvestor(
-                                investor
+                        .registerInvestor(
+                                request
                         );
 
 
-        System.out.println(
-                "VALIDATION ERRORS = "
-                        + errors
+        assertNotNull(
+                registeredInvestor
+        );
+
+
+        assertNotNull(
+                registeredInvestor
+                        .getUserId()
+        );
+
+
+        assertEquals(
+                "INVESTOR",
+                registeredInvestor
+                        .getUserRole()
         );
 
 
         assertTrue(
-                errors.isEmpty(),
-                "Validation errors found: "
-                        + errors
+                registeredInvestor
+                        .isActive()
         );
+
+
+        assertNotNull(
+                registeredInvestor
+                        .getRegistrationDate()
+        );
+
+
+        assertNotNull(
+                registeredInvestor
+                        .getNominee()
+        );
+
+
+        assertNotNull(
+                registeredInvestor
+                        .getNominee()
+                        .getNomineeId()
+        );
+
+
+        /*
+         * Service normalizes names before persistence.
+         */
+        assertEquals(
+                "BHARATH KUMAR",
+                registeredInvestor
+                        .getName()
+        );
+
+
+        assertEquals(
+                "RAHUL KUMAR",
+                registeredInvestor
+                        .getNominee()
+                        .getName()
+        );
+
+
+        /*
+         * Stored password must be hashed rather than kept
+         * as the plain request password.
+         */
+        assertNotEquals(
+                "Password@1",
+                registeredInvestor
+                        .getPassword()
+        );
+
+
+        assertTrue(
+                PasswordUtil
+                        .verifyPassword(
+                                "Password@1",
+                                registeredInvestor
+                                        .getPassword()
+                        )
+        );
+
+
+        /*
+         * PAN and account numbers are encrypted before persistence.
+         */
+        assertNotEquals(
+                "ABCDE1234F",
+                registeredInvestor
+                        .getPanNumber()
+        );
+
+
+        assertNotEquals(
+                "123456789012",
+                registeredInvestor
+                        .getAccountNumber()
+        );
+
+
+        assertNotEquals(
+                "123456789012",
+                registeredInvestor
+                        .getNominee()
+                        .getAccountNumber()
+        );
+
+
+        verify(
+                nomineeRepository,
+                times(1)
+        )
+                .save(
+                        registeredInvestor
+                                .getNominee()
+                );
+
+
+        verify(
+                investorRepository,
+                times(1)
+        )
+                .save(
+                        registeredInvestor
+                );
+
+
+        verify(
+                portfolioService,
+                times(1)
+        )
+                .createPortfolio(
+                        registeredInvestor
+                                .getUserId()
+                );
     }
 
-    @Test
-    void shouldReturnValidationErrorsForInvalidInvestor() {
-        Investor investor = validInvestor();
-        investor.setEmail("invalid-email");
-
-        Map<String, String> errors =
-                investorService.validateInvestor(investor);
-
-        assertTrue(errors.containsKey("email"));
-    }
-
-    @Test
-    void shouldRegisterValidInvestor() {
-        Investor investor = validInvestor();
-
-        when(portfolioService.createPortfolio(anyString()))
-                .thenReturn(new Portfolio());
-
-        assertTrue(investorService.registerInvestor(investor));
-
-        assertEquals("INVESTOR", investor.getUserRole());
-        assertTrue(investor.isActive());
-        assertNotNull(investor.getUserId());
-        assertNotNull(investor.getNominee().getNomineeId());
-
-        verify(nomineeRepository).save(investor.getNominee());
-        verify(investorRepository).save(investor);
-        verify(portfolioService).createPortfolio(investor.getUserId());
-    }
 
     @Test
     void shouldAuthenticateInvestorWithCorrectPassword() {
@@ -178,25 +333,30 @@ class  InvestorServiceTest {
         Investor investor =
                 new Investor();
 
+
         investor.setUserId(
                 "INV001"
         );
+
 
         investor.setActive(
                 true
         );
 
+
         investor.setPassword(
-                PasswordUtil.hashPassword(
-                        "Password@1"
-                )
+                PasswordUtil
+                        .hashPassword(
+                                "Password@1"
+                        )
         );
 
 
         when(
-                investorRepository.findById(
-                        "INV001"
-                )
+                investorRepository
+                        .findById(
+                                "INV001"
+                        )
         )
                 .thenReturn(
                         Optional.of(
@@ -205,36 +365,64 @@ class  InvestorServiceTest {
                 );
 
 
-        assertSame(
-                investor,
+        Investor authenticated =
                 investorService
                         .authenticateInvestor(
                                 "INV001",
                                 "Password@1"
-                        )
+                        );
+
+
+        assertSame(
+                investor,
+                authenticated
         );
+
+
+        verify(
+                investorRepository
+        )
+                .findById(
+                        "INV001"
+                );
     }
+
+
     @Test
     void shouldThrowAuthenticationExceptionForWrongInvestorPassword() {
 
         Investor investor =
                 new Investor();
 
-        investor.setUserId("INV001");
-        investor.setActive(true);
+
+        investor.setUserId(
+                "INV001"
+        );
+
+
+        investor.setActive(
+                true
+        );
+
 
         investor.setPassword(
-                PasswordUtil.hashPassword(
-                        "Password@1"
-                )
+                PasswordUtil
+                        .hashPassword(
+                                "Password@1"
+                        )
         );
 
 
         when(
-                investorRepository.findById("INV001")
+                investorRepository
+                        .findById(
+                                "INV001"
+                        )
         )
                 .thenReturn(
-                        Optional.of(investor)
+                        Optional.of(
+                                investor
+                        )
                 );
 
 
@@ -249,19 +437,60 @@ class  InvestorServiceTest {
         );
     }
 
+
     @Test
-    void shouldThrowWhenInvestorDoesNotExist() {
-        when(investorRepository.findById("INV404"))
-                .thenReturn(Optional.empty());
+    void shouldThrowAuthenticationExceptionWhenInvestorIdDoesNotExist() {
+
+        when(
+                investorRepository
+                        .findById(
+                                "INV404"
+                        )
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
+
 
         assertThrows(
-                ResourceNotFoundException.class,
-                () -> investorService.getInvestorByUserId("INV404")
+                AuthenticationException.class,
+                () ->
+                        investorService
+                                .authenticateInvestor(
+                                        "INV404",
+                                        "Password@1"
+                                )
         );
     }
 
+
     @Test
-    void shouldRejectInactiveInvestorLogin() {
+    void shouldThrowWhenInvestorDoesNotExist() {
+
+        when(
+                investorRepository
+                        .findById(
+                                "INV404"
+                        )
+        )
+                .thenReturn(
+                        Optional.empty()
+                );
+
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () ->
+                        investorService
+                                .getInvestorByUserId(
+                                        "INV404"
+                                )
+        );
+    }
+
+
+    @Test
+    void shouldReturnInvestorById() {
 
         Investor investor =
                 new Investor();
@@ -270,21 +499,64 @@ class  InvestorServiceTest {
                 "INV001"
         );
 
+
+        when(
+                investorRepository
+                        .findById(
+                                "INV001"
+                        )
+        )
+                .thenReturn(
+                        Optional.of(
+                                investor
+                        )
+                );
+
+
+        Investor result =
+                investorService
+                        .getInvestorByUserId(
+                                "INV001"
+                        );
+
+
+        assertSame(
+                investor,
+                result
+        );
+    }
+
+
+    @Test
+    void shouldRejectInactiveInvestorLogin() {
+
+        Investor investor =
+                new Investor();
+
+
+        investor.setUserId(
+                "INV001"
+        );
+
+
         investor.setActive(
                 false
         );
 
+
         investor.setPassword(
-                PasswordUtil.hashPassword(
-                        "Password@1"
-                )
+                PasswordUtil
+                        .hashPassword(
+                                "Password@1"
+                        )
         );
 
 
         when(
-                investorRepository.findById(
-                        "INV001"
-                )
+                investorRepository
+                        .findById(
+                                "INV001"
+                        )
         )
                 .thenReturn(
                         Optional.of(
@@ -310,5 +582,36 @@ class  InvestorServiceTest {
                         + "Please register yourself again.",
                 exception.getMessage()
         );
+    }
+
+
+    @Test
+    void shouldRejectEmptyInvestorIdDuringAuthentication() {
+
+        AuthenticationException exception =
+                assertThrows(
+                        AuthenticationException.class,
+                        () ->
+                                investorService
+                                        .authenticateInvestor(
+                                                "",
+                                                "Password@1"
+                                        )
+                );
+
+
+        assertEquals(
+                "Investor ID cannot be empty.",
+                exception.getMessage()
+        );
+
+
+        verify(
+                investorRepository,
+                never()
+        )
+                .findById(
+                        anyString()
+                );
     }
 }

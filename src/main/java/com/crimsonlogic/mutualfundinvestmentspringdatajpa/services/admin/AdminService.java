@@ -1,12 +1,14 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.admin;
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.AdminProfileUpdateRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotFoundException;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.AdminRepository;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Admin;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.AdminRepository;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.utilities.DateUtil;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.utilities.security.PasswordUtil;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 
 
 /**
@@ -238,50 +240,52 @@ public class AdminService implements I_AdminService {
      * @return true when the operation succeeds; otherwise false
      */
     @Override
-    public boolean updateAdminProfile(Admin admin) {
+    @Transactional
+    public Admin updateAdminProfile(
+            String adminId,
+            AdminProfileUpdateRequest request) {
 
-        try {
 
-            if (admin == null ||
-                    admin.getUserId() == null ||
-                    admin.getUserId().trim().isEmpty()) {
+        Admin admin =
+                adminRepository
+                        .findById(
+                                adminId
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Admin not found with id: "
+                                                        + adminId
+                                        )
+                        );
 
-                return false;
-            }
 
-            if (admin.getName() == null ||
-                    admin.getName().trim().isEmpty()) {
+        /*
+         * Request validation has already completed successfully.
+         * Protected administrator fields are preserved.
+         */
+        admin.setName(
+                request
+                        .getName()
+                        .trim()
+                        .toUpperCase()
+        );
 
-                return false;
-            }
 
-            if (admin.getEmail() == null ||
-                    admin.getEmail().trim().isEmpty()) {
+        admin.setEmail(
+                request.getEmail()
+        );
 
-                return false;
-            }
 
-            if (admin.getPhoneNumber() == null ||
-                    !admin.getPhoneNumber().matches("^[6-9][0-9]{9}$")) {
+        admin.setPhoneNumber(
+                request.getPhoneNumber()
+        );
 
-                return false;
-            }
 
-            if (admin.getAdminCode() == null ||
-                    admin.getAdminCode().trim().isEmpty()) {
 
-                return false;
-            }
 
-            adminRepository.save(admin);
-
-            return true;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            return false;
-        }
+        return adminRepository.save(
+                admin
+        );
     }
 }

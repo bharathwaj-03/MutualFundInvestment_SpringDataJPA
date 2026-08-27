@@ -1,28 +1,27 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor;
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorProfileUpdateRequest;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorRegistrationRequest;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.NomineeProfileUpdateRequest;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.NomineeRegistrationRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.InactiveInvestorResponse;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.InvestorProfileResponse;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.NomineeProfileResponse;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.AuthenticationException;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotFoundException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.InvalidRequestException;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.UserDataValidationException;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.InvestorRepository;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.NomineeRepository;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.portfolio.Portfolio;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotFoundException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Nominee;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.InvestorRepository;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.NomineeRepository;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.portfolio.I_PortfolioService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.utilities.DateUtil;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.utilities.IdGeneratorUtil;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.utilities.security.EncryptionUtil;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.utilities.security.PasswordUtil;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.interfaces.UserDataValidation;
 
 import javax.transaction.Transactional;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -66,628 +65,191 @@ public class InvestorService implements I_InvestorService {
         this.portfolioService = portfolioService;
     }
 
-    /**
-     * Validates investor names for presence, minimum length, alphabetic spacing, and repeated-character rules.
-     */
-    public UserDataValidation nameValidate =
-            (String str) -> {
 
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid name."
-                    );
-                }
-
-                str = str.trim();
-
-                if (str.length() < 3) {
-
-                    throw new InvalidRequestException(
-                            "Name must contain at least 3 characters."
-                    );
-                }
-
-                if (!str.matches(
-                        "^[a-zA-Z]+(?: [a-zA-Z]+)*$")) {
-
-                    throw new InvalidRequestException(
-                            "Name should contain only alphabets and spaces."
-                    );
-                }
-
-                String lowerName =
-                        str.toLowerCase();
-
-                for (int i = 0;
-                     i <= lowerName.length() - 3;
-                     i++) {
-
-                    char first =
-                            lowerName.charAt(i);
-
-                    char second =
-                            lowerName.charAt(i + 1);
-
-                    char third =
-                            lowerName.charAt(i + 2);
-
-
-                    if (first == second &&
-                            second == third) {
-
-                        throw new InvalidRequestException(
-                                "Name should not contain the same character "
-                                        + "3 times continuously."
-                        );
-                    }
-                }
-
-
-                return str.toUpperCase();
-            };
-
-
-    /**
-     * Validates that an investor email address follows the accepted email format.
-     */
-    public UserDataValidation emailValid =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid email address. Ex: name@company.com"
-                    );
-                }
-
-                boolean isValid =
-                        str.matches(
-                                "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-                        );
-
-                if (!isValid) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid email address. Ex: name@company.com"
-                    );
-                }
-
-                return str;
-            };
-
-
-    /**
-     * Validates that an investor phone number is a valid 10-digit Indian mobile number.
-     */
-    public UserDataValidation phoneNum =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid 10-digit phone number."
-                    );
-                }
-
-                boolean isValid =
-                        str.matches(
-                                "^[6-9]\\d{9}$"
-                        );
-
-                if (!isValid) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid 10-digit phone number."
-                    );
-                }
-
-                return str;
-            };
-
-
-    /**
-     * Validates the PAN format before the value is encrypted and persisted.
-     */
-    public UserDataValidation panValidate =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid PAN."
-                    );
-                }
-
-                boolean isValid =
-                        str.matches(
-                                "^[A-Z]{5}[0-9]{4}[A-Z]{1}$"
-                        );
-
-                if (!isValid) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid PAN (5 letters in CAPS followed by 4 digits and 1 letter)."
-                    );
-                }
-
-                return str.toUpperCase();
-            };
-
-    /**
-     * Validates account-number input according to the configured numeric-length rule.
-     */
-    public UserDataValidation accountNumberValidate =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please enter account number."
-                    );
-                }
-
-                if (!str.matches("\\d{16,19}")) {
-
-                    throw new InvalidRequestException(
-                            "Account number must contain 9 to 18 digits."
-                    );
-                }
-
-
-                return str;
-            };
-
-
-    /**
-     * Validates password strength requirements before hashing or password-related operations.
-     */
-    public UserDataValidation passwordValidate =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Password cannot be empty."
-                    );
-                }
-
-                boolean isValid =
-                        str.matches(
-                                "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).{6,}$"
-                        );
-
-                if (!isValid) {
-
-                    throw new InvalidRequestException(
-                            "Password must contain at least 6 characters, one uppercase letter, one lowercase letter, one digit and one special character."
-                    );
-                }
-
-                return str;
-            };
-
-    /**
-     * Validates nominee names using the same name-quality rules applied to investor names.
-     */
-    public UserDataValidation nomineeNameValidate =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please enter a valid name."
-                    );
-                }
-
-                str = str.trim();
-
-                if (str.length() < 3) {
-
-                    throw new InvalidRequestException(
-                            "Name must contain at least 3 characters."
-                    );
-                }
-
-                if (!str.matches(
-                        "^[a-zA-Z]+(?: [a-zA-Z]+)*$")) {
-
-                    throw new InvalidRequestException(
-                            "Name should contain only alphabets and spaces."
-                    );
-                }
-
-                String lowerName =
-                        str.toLowerCase();
-
-                for (int i = 0;
-                     i <= lowerName.length() - 3;
-                     i++) {
-
-                    char first =
-                            lowerName.charAt(i);
-
-                    char second =
-                            lowerName.charAt(i + 1);
-
-                    char third =
-                            lowerName.charAt(i + 2);
-
-
-                    if (first == second &&
-                            second == third) {
-
-                        throw new InvalidRequestException(
-                                "Name should not contain the same character "
-                                        + "3 times continuously."
-                        );
-                    }
-                }
-
-
-                return str.toUpperCase();
-            };
-
-
-    /**
-     * Validates that nominee gender contains one of the supported values.
-     */
-    public UserDataValidation genderValidate =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please select nominee gender."
-                    );
-                }
-
-                if (!str.matches(
-                        "(?i)^(male|female)$")) {
-
-                    throw new InvalidRequestException(
-                            "Gender must be Male or Female."
-                    );
-                }
-
-                return str.toUpperCase();
-            };
-
-
-    /**
-     * Validates that the nominee relationship has been supplied.
-     */
-    public UserDataValidation relationshipValidate =
-            (String str) -> {
-
-                if (str == null ||
-                        str.trim().isEmpty()) {
-
-                    throw new InvalidRequestException(
-                            "Please enter relationship with nominee."
-                    );
-                }
-
-                return str;
-            };
-
-    /**
-     * Validates investor and nominee information and returns all field-specific validation errors found.
-     *
-     * @param investor investor information
-     * @return map containing validation errors keyed by field name; empty when validation succeeds
-     */
-    @Override
-    public Map<String, String> validateInvestor(
-            Investor investor) {
-
-        Map<String, String> errors =
-                new LinkedHashMap<>();
-
-        try {
-
-            investor.setName(
-                    nameValidate.validate(
-                            investor.getName()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "name",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            passwordValidate.validate(
-                    investor.getPassword()
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "password",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            investor.setEmail(
-                    emailValid.validate(
-                            investor.getEmail()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "email",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            investor.setPhoneNumber(
-                    phoneNum.validate(
-                            investor.getPhoneNumber()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "phoneNumber",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            // Security rule: sensitive investor financial identifiers are encrypted before persistence.
-
-            investor.setPanNumber(
-                    panValidate.validate(
-                            investor.getPanNumber()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "panNumber",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            investor.setAccountNumber(
-                    accountNumberValidate.validate(
-                            investor.getAccountNumber()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "accountNumber",
-                    e.getMessage()
-            );
-        }
-
-        Nominee nominee =
-                investor.getNominee();
-
-        if (nominee == null) {
-
-            errors.put(
-                    "nominee",
-                    "Nominee details are required."
-            );
-
-            return errors;
-        }
-
-        try {
-
-            nominee.setName(
-                    nomineeNameValidate.validate(
-                            nominee.getName()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "nominee.name",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            Integer age =
-                    nominee.getAge();
-
-            if (age == null) {
-
-                throw new InvalidRequestException(
-                        "Please enter nominee age."
-                );
-            }
-
-            if (age <= 0) {
-
-                throw new InvalidRequestException(
-                        "Nominee age must be greater than 0."
-                );
-            }
-
-        } catch (InvalidRequestException e) {
-
-            errors.put(
-                    "nominee.age",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            nominee.setGender(
-                    genderValidate.validate(
-                            nominee.getGender()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "nominee.gender",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            nominee.setRelationship(
-                    relationshipValidate.validate(
-                            nominee.getRelationship()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "nominee.relationship",
-                    e.getMessage()
-            );
-        }
-
-        try {
-
-            nominee.setAccountNumber(
-                    accountNumberValidate.validate(
-                            nominee.getAccountNumber()
-                    )
-            );
-
-        } catch (InvalidRequestException | UserDataValidationException e) {
-
-            errors.put(
-                    "nominee.accountNumber",
-                    e.getMessage()
-            );
-        }
-
-
-        return errors;
-    }
 
     /**
      * Registers a new investor after validation, security processing, nominee persistence, and portfolio creation.
      *
-     * @param investor investor information
-     * @return true when the operation succeeds; otherwise false
      */
     @Override
-    public boolean registerInvestor(
-            Investor investor) {
+    public Investor registerInvestor(
+            InvestorRegistrationRequest request) {
 
         try {
 
-            Map<String, String> errors =
-                    validateInvestor(investor);
+            /*
+             * Request-format validation has already been performed
+             * by Bean Validation before this service method executes.
+             */
 
-            if (!errors.isEmpty()) {
 
-                return false;
-            }
+            Investor investor =
+                    new Investor();
 
-            if (investor.getUserId() == null ||
-                    investor.getUserId().trim().isEmpty()) {
 
-                investor.setUserId(
-                        IdGeneratorUtil.generateInvestorId()
-                );
-            }
+            investor.setUserId(
+                    IdGeneratorUtil
+                            .generateInvestorId()
+            );
 
-            Nominee nominee =
-                    investor.getNominee();
 
-            if (nominee.getNomineeId() == null ||
-                    nominee.getNomineeId().trim().isEmpty()) {
+            /*
+             * Name normalization remains a service transformation.
+             * It is not validation.
+             */
+            investor.setName(
+                    request
+                            .getName()
+                            .trim()
+                            .toUpperCase()
+            );
 
-                nominee.setNomineeId(
-                        IdGeneratorUtil.generateNomineeId()
-                );
-            }
 
-            investor.setUserRole("INVESTOR");
+            investor.setEmail(
+                    request.getEmail()
+            );
 
-            investor.setActive(true);
 
-            investor.setRegistrationDate(DateUtil.getCurrentDate());
+            investor.setPhoneNumber(
+                    request.getPhoneNumber()
+            );
 
-            // Security rule: passwords are hashed before persistence and are never stored as plain text.
 
+            investor.setRiskProfile(
+                    request.getRiskProfile()
+            );
+
+
+            investor.setUserRole(
+                    "INVESTOR"
+            );
+
+
+            investor.setActive(
+                    true
+            );
+
+
+            investor.setRegistrationDate(
+                    DateUtil.getCurrentDate()
+            );
+
+
+            /*
+             * Passwords are hashed before persistence and are
+             * never stored as plain text.
+             */
             investor.setPassword(
                     PasswordUtil.hashPassword(
-                            investor.getPassword()
+                            request.getPassword()
                     )
             );
 
-            // Security rule: sensitive investor financial identifiers are encrypted before persistence.
 
+            /*
+             * Sensitive investor financial identifiers are encrypted
+             * before they are stored in the database.
+             */
             investor.setPanNumber(
                     EncryptionUtil.encrypt(
-                            investor.getPanNumber()
+                            request.getPanNumber()
                     )
             );
+
 
             investor.setAccountNumber(
                     EncryptionUtil.encrypt(
-                            investor.getAccountNumber()
+                            request.getAccountNumber()
                     )
             );
 
-            // Security rule: the nominee account number is encrypted before persistence.
 
+            NomineeRegistrationRequest
+                    nomineeRequest =
+                    request.getNominee();
+
+
+            Nominee nominee =
+                    new Nominee();
+
+
+            nominee.setNomineeId(
+                    IdGeneratorUtil
+                            .generateNomineeId()
+            );
+
+
+            nominee.setName(
+                    nomineeRequest
+                            .getName()
+                            .trim()
+                            .toUpperCase()
+            );
+
+
+            nominee.setAge(
+                    nomineeRequest.getAge()
+            );
+
+
+            nominee.setGender(
+                    nomineeRequest
+                            .getGender()
+                            .toUpperCase()
+            );
+
+
+            nominee.setRelationship(
+                    nomineeRequest
+                            .getRelationship()
+            );
+
+
+            /*
+             * Nominee account information is encrypted before
+             * persistence.
+             */
             nominee.setAccountNumber(
                     EncryptionUtil.encrypt(
-                            nominee.getAccountNumber()
+                            nomineeRequest
+                                    .getAccountNumber()
                     )
             );
 
-            nomineeRepository.save(nominee);
 
-            
-            investorRepository.save(investor);
-            Portfolio portfolio =
-                    portfolioService.createPortfolio(
-                            investor.getUserId()
-                    );
+            investor.setNominee(
+                    nominee
+            );
 
 
-            return true;
+            /*
+             * Nominee is persisted before the investor because the
+             * investor record references the nominee.
+             */
+            nomineeRepository.save(
+                    nominee
+            );
+
+
+            investorRepository.save(
+                    investor
+            );
+
+
+            portfolioService.createPortfolio(
+                    investor.getUserId()
+            );
+
+
+            return investor;
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
-            return false;
+            throw new InvalidRequestException(
+                    "Unable to register investor."
+            );
         }
     }
 
@@ -767,131 +329,149 @@ public class InvestorService implements I_InvestorService {
 
     /**
      * Updates editable investor and nominee profile information while preserving protected credentials.
-     *
-     * @param investor investor information
-     * @return true when the operation succeeds; otherwise false
+
      */
     @Override
-    public boolean updateInvestorProfile(
-            Investor investor) {
+    @Transactional
+    public InvestorProfileResponse updateInvestorProfile(
+            String investorId,
+            InvestorProfileUpdateRequest request) {
 
-        try {
 
-            if (investor == null ||
-                    investor.getUserId() == null ||
-                    investor.getUserId().trim().isEmpty()) {
+        Investor investor =
+                investorRepository
+                        .findByIdWithNominee(
+                                investorId
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Investor not found with id: "
+                                                        + investorId
+                                        )
+                        );
 
-                return false;
-            }
 
-            investor.setName(
-                    nameValidate.validate(
-                            investor.getName()
-                    )
+        /*
+         * Request-format validation has already been performed
+         * by Bean Validation before this method executes.
+         */
+
+        investor.setName(
+                request
+                        .getName()
+                        .trim()
+                        .toUpperCase()
+        );
+
+
+        investor.setEmail(
+                request.getEmail()
+        );
+
+
+        investor.setPhoneNumber(
+                request.getPhoneNumber()
+        );
+
+
+        investor.setRiskProfile(
+                request.getRiskProfile()
+        );
+
+
+        /*
+         * PAN and account number arrive as plain request values
+         * and are encrypted before persistence.
+         */
+        investor.setPanNumber(
+                EncryptionUtil.encrypt(
+                        request.getPanNumber()
+                )
+        );
+
+
+        investor.setAccountNumber(
+                EncryptionUtil.encrypt(
+                        request.getAccountNumber()
+                )
+        );
+
+
+        Nominee nominee =
+                investor.getNominee();
+
+
+        if (nominee == null) {
+
+            throw new ResourceNotFoundException(
+                    "Nominee details not found for investor: "
+                            + investorId
             );
-
-            investor.setEmail(
-                    emailValid.validate(
-                            investor.getEmail()
-                    )
-            );
-
-            investor.setPhoneNumber(
-                    phoneNum.validate(
-                            investor.getPhoneNumber()
-                    )
-            );
-
-            // Security rule: sensitive investor financial identifiers are encrypted before persistence.
-
-            investor.setPanNumber(
-                    panValidate.validate(
-                            investor.getPanNumber()
-                    )
-            );
-
-            investor.setAccountNumber(
-                    accountNumberValidate.validate(
-                            investor.getAccountNumber()
-                    )
-            );
-
-            Nominee nominee =
-                    investor.getNominee();
-
-            if (nominee == null) {
-
-                return false;
-            }
-
-
-            nominee.setName(
-                    nomineeNameValidate.validate(
-                            nominee.getName()
-                    )
-            );
-
-            nominee.setGender(
-                    genderValidate.validate(
-                            nominee.getGender()
-                    )
-            );
-
-            nominee.setRelationship(
-                    relationshipValidate.validate(
-                            nominee.getRelationship()
-                    )
-            );
-
-            nominee.setAccountNumber(
-                    accountNumberValidate.validate(
-                            nominee.getAccountNumber()
-                    )
-            );
-
-
-            if (nominee.getAge() <= 0) {
-
-                return false;
-            }
-
-            // Security rule: sensitive investor financial identifiers are encrypted before persistence.
-
-            investor.setPanNumber(
-                    EncryptionUtil.encrypt(
-                            investor.getPanNumber()
-                    )
-            );
-
-            investor.setAccountNumber(
-                    EncryptionUtil.encrypt(
-                            investor.getAccountNumber()
-                    )
-            );
-
-            // Security rule: the nominee account number is encrypted before persistence.
-
-            nominee.setAccountNumber(
-                    EncryptionUtil.encrypt(
-                            nominee.getAccountNumber()
-                    )
-            );
-
-
-            nomineeRepository.save(nominee);
-            investorRepository.save(investor);
-
-
-            return true;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            return false;
         }
-    }
 
+
+        NomineeProfileUpdateRequest
+                nomineeRequest =
+                request.getNominee();
+
+
+        /*
+         * Existing nominee ID is preserved. Only editable
+         * nominee information is changed.
+         */
+        nominee.setName(
+                nomineeRequest
+                        .getName()
+                        .trim()
+                        .toUpperCase()
+        );
+
+
+        nominee.setAge(
+                nomineeRequest.getAge()
+        );
+
+
+        nominee.setGender(
+                nomineeRequest
+                        .getGender()
+                        .toUpperCase()
+        );
+
+
+        nominee.setRelationship(
+                nomineeRequest
+                        .getRelationship()
+        );
+
+
+        nominee.setAccountNumber(
+                EncryptionUtil.encrypt(
+                        nomineeRequest
+                                .getAccountNumber()
+                )
+        );
+
+
+        nomineeRepository.save(
+                nominee
+        );
+
+
+        investorRepository.save(
+                investor
+        );
+
+
+        /*
+         * Returns the normal profile DTO so encrypted database
+         * values are decrypted only for the API response.
+         */
+        return getInvestorProfile(
+                investorId
+        );
+    }
     /**
      * Soft-deactivates an active investor account without deleting its stored data.
      *

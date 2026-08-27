@@ -1,74 +1,157 @@
-package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
+package com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .controller;
 
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Admin;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.admin.I_AdminService;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor.I_InvestorService;
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .dto.request.InvestorRegistrationRequest;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .exception.GlobalExceptionHandler;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .model.user.Admin;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .model.user.Investor;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .services.admin.I_AdminService;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .services.investor.I_InvestorService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.springframework.mock.web.MockHttpSession;
+
+import org.springframework.test.web.servlet.MockMvc;
+
+import org.springframework.test.web.servlet
+        .setup.MockMvcBuilders;
+
+import org.springframework.validation
+        .beanvalidation.LocalValidatorFactoryBean;
+
 
 import static org.mockito.ArgumentMatchers.any;
+
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.springframework.test.web.servlet
+        .request.MockMvcRequestBuilders.post;
+
+import static org.springframework.test.web.servlet
+        .result.MockMvcResultMatchers.*;
+
 
 class UserLoginControllerTest {
+
 
     @Mock
     private I_AdminService adminService;
 
+
     @Mock
     private I_InvestorService investorService;
 
-    private MockMvc mockMvc;
 
-    private ObjectMapper objectMapper;
+    private MockMvc mockMvc;
 
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
 
-        objectMapper = new ObjectMapper();
+        MockitoAnnotations
+                .openMocks(this);
 
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(
-                        new UserLoginController(
-                                adminService,
-                                investorService
+
+        /*
+         * Standalone MockMvc does not automatically use the
+         * application's MVC validator configuration.
+         *
+         * LocalValidatorFactoryBean enables @Valid validation
+         * for controller request DTOs during these tests.
+         */
+        LocalValidatorFactoryBean validator =
+                new LocalValidatorFactoryBean();
+
+        validator.afterPropertiesSet();
+
+
+        mockMvc =
+                MockMvcBuilders
+                        .standaloneSetup(
+                                new UserLoginController(
+                                        adminService,
+                                        investorService
+                                )
                         )
-                )
-                .build();
+                        .setControllerAdvice(
+                                new GlobalExceptionHandler()
+                        )
+                        .setValidator(
+                                validator
+                        )
+                        .build();
     }
 
+
+    // =========================================================
+    // ADMIN LOGIN SUCCESS
+    // =========================================================
+
     @Test
-    void shouldLoginAdminAndCreateSession() throws Exception {
+    void shouldLoginAdminAndCreateSession()
+            throws Exception {
 
-        Admin admin = new Admin();
-        admin.setUserId("ADM001");
+        Admin admin =
+                new Admin();
 
-        when(adminService.authenticateAdmin(
-                "ADM001",
-                "Deep@37"
-        )).thenReturn(true);
+        admin.setUserId(
+                "ADM001"
+        );
 
-        when(adminService.getAdminByUserId("ADM001"))
-                .thenReturn(admin);
+
+        when(
+                adminService
+                        .authenticateAdmin(
+                                "ADM001",
+                                "Deep@37"
+                        )
+        )
+                .thenReturn(
+                        true
+                );
+
+
+        when(
+                adminService
+                        .getAdminByUserId(
+                                "ADM001"
+                        )
+        )
+                .thenReturn(
+                        admin
+                );
+
 
         mockMvc.perform(
-                        post("/api/auth/admin/login")
-                                .contentType("application/json")
+                        post(
+                                "/api/auth/admin/login"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
                                 .content("""
                                         {
                                           "userId":"ADM001",
@@ -76,37 +159,71 @@ class UserLoginControllerTest {
                                         }
                                         """)
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message")
-                        .value("Admin login successful."))
-                .andExpect(jsonPath("$.userId")
-                        .value("ADM001"))
-                .andExpect(jsonPath("$.role")
-                        .value("ADMIN"))
-                .andExpect(request()
-                        .sessionAttribute(
-                                "USER_ID",
-                                "ADM001"
-                        ))
-                .andExpect(request()
-                        .sessionAttribute(
-                                "ROLE",
-                                "ADMIN"
-                        ));
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Admin login successful."
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.userId")
+                                .value(
+                                        "ADM001"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.role")
+                                .value(
+                                        "ADMIN"
+                                )
+                )
+                .andExpect(
+                        request()
+                                .sessionAttribute(
+                                        "USER_ID",
+                                        "ADM001"
+                                )
+                )
+                .andExpect(
+                        request()
+                                .sessionAttribute(
+                                        "ROLE",
+                                        "ADMIN"
+                                )
+                );
     }
+
+
+    // =========================================================
+    // ADMIN LOGIN FAILURE
+    // =========================================================
 
     @Test
     void shouldReturn401ForInvalidAdminLogin()
             throws Exception {
 
-        when(adminService.authenticateAdmin(
-                "ADM001",
-                "Wrong"
-        )).thenReturn(false);
+        when(
+                adminService
+                        .authenticateAdmin(
+                                "ADM001",
+                                "Wrong"
+                        )
+        )
+                .thenReturn(
+                        false
+                );
+
 
         mockMvc.perform(
-                        post("/api/auth/admin/login")
-                                .contentType("application/json")
+                        post(
+                                "/api/auth/admin/login"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
                                 .content("""
                                         {
                                           "userId":"ADM001",
@@ -114,168 +231,39 @@ class UserLoginControllerTest {
                                         }
                                         """)
                 )
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message")
-                        .value(
-                                "Invalid Admin ID or Password."
-                        ));
+                .andExpect(
+                        status().isUnauthorized()
+                )
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Invalid Admin ID or Password."
+                                )
+                );
     }
 
-    @Test
-    void shouldLoginInvestorAndCreateSession()
-            throws Exception {
 
-        Investor investor = new Investor();
-        investor.setUserId("INV001");
-        investor.setName("Bharath");
-
-        when(investorService.authenticateInvestor(
-                "INV001",
-                "Password@1"
-        )).thenReturn(investor);
-
-        mockMvc.perform(
-                        post("/api/auth/investor/login")
-                                .contentType("application/json")
-                                .content("""
-                                        {
-                                          "userId":"INV001",
-                                          "password":"Password@1"
-                                        }
-                                        """)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId")
-                        .value("INV001"))
-                .andExpect(jsonPath("$.name")
-                        .value("Bharath"))
-                .andExpect(jsonPath("$.role")
-                        .value("INVESTOR"))
-                .andExpect(request()
-                        .sessionAttribute(
-                                "USER_ID",
-                                "INV001"
-                        ))
-                .andExpect(request()
-                        .sessionAttribute(
-                                "ROLE",
-                                "INVESTOR"
-                        ));
-    }
+    // =========================================================
+    // ADMIN LOGIN VALIDATION FAILURE
+    // =========================================================
 
     @Test
-    void shouldReturn401ForInvalidInvestorLogin()
+    void shouldReturn400WhenAdminLoginFieldsAreBlank()
             throws Exception {
-
-        when(investorService.authenticateInvestor(
-                "INV001",
-                "Wrong"
-        )).thenReturn(null);
-
-        mockMvc.perform(
-                        post("/api/auth/investor/login")
-                                .contentType("application/json")
-                                .content("""
-                                        {
-                                          "userId":"INV001",
-                                          "password":"Wrong"
-                                        }
-                                        """)
-                )
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message")
-                        .value(
-                                "Invalid Investor ID or Password."
-                        ));
-    }
-
-    @Test
-    void shouldRegisterInvestor()
-            throws Exception {
-
-        when(investorService.validateInvestor(
-                any(Investor.class)
-        )).thenReturn(Collections.emptyMap());
-
-        when(investorService.registerInvestor(
-                any(Investor.class)
-        )).thenAnswer(invocation -> {
-
-            Investor investor =
-                    invocation.getArgument(0);
-
-            investor.setUserId("INV001");
-
-            return true;
-        });
-
-        mockMvc.perform(
-                        post("/api/auth/investor/register")
-                                .contentType("application/json")
-                                .content("""
-                                        {
-                                          "name":"Bharath",
-                                          "email":"bharath@example.com",
-                                          "phoneNumber":"9876543210",
-                                          "password":"Password@1"
-                                        }
-                                        """)
-                )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message")
-                        .value(
-                                "Investor registered successfully."
-                        ))
-                .andExpect(jsonPath("$.userId")
-                        .value("INV001"));
-    }
-
-    @Test
-    void shouldReturn400WhenInvestorValidationFails()
-            throws Exception {
-
-        Investor investor = new Investor();
-
-        investor.setName("Ben");
-
-        investor.setPassword("abc");
-
-
-        Map<String, String> errors =
-                new LinkedHashMap<>();
-
-        errors.put(
-                "name",
-                "Name must contain at least 4 characters."
-        );
-
-        errors.put(
-                "password",
-                "Password must contain at least 6 characters, one uppercase letter, one lowercase letter, one digit and one special character."
-        );
-
-
-        when(
-                investorService.validateInvestor(
-                        any(Investor.class)
-                )
-        )
-                .thenReturn(errors);
-
 
         mockMvc.perform(
                         post(
-                                "/api/auth/investor/register"
+                                "/api/auth/admin/login"
                         )
                                 .contentType(
-                                        MediaType.APPLICATION_JSON
+                                        "application/json"
                                 )
-                                .content(
-                                        objectMapper
-                                                .writeValueAsString(
-                                                        investor
-                                                )
-                                )
+                                .content("""
+                                        {
+                                          "userId":"",
+                                          "password":""
+                                        }
+                                        """)
                 )
                 .andExpect(
                         status().isBadRequest()
@@ -286,7 +274,355 @@ class UserLoginControllerTest {
                 )
                 .andExpect(
                         jsonPath("$.error")
-                                .value("Bad Request")
+                                .value(
+                                        "Bad Request"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.userId")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.password")
+                                .exists()
+                );
+
+
+        /*
+         * Bean Validation rejects the request before the
+         * authentication service is called.
+         */
+        verify(
+                adminService,
+                never()
+        )
+                .authenticateAdmin(
+                        anyString(),
+                        anyString()
+                );
+    }
+
+
+    // =========================================================
+    // INVESTOR LOGIN SUCCESS
+    // =========================================================
+
+    @Test
+    void shouldLoginInvestorAndCreateSession()
+            throws Exception {
+
+        Investor investor =
+                new Investor();
+
+        investor.setUserId(
+                "INV001"
+        );
+
+        investor.setName(
+                "Bharath"
+        );
+
+
+        when(
+                investorService
+                        .authenticateInvestor(
+                                "INV001",
+                                "Password@1"
+                        )
+        )
+                .thenReturn(
+                        investor
+                );
+
+
+        mockMvc.perform(
+                        post(
+                                "/api/auth/investor/login"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                        {
+                                          "userId":"INV001",
+                                          "password":"Password@1"
+                                        }
+                                        """)
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Investor login successful."
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.userId")
+                                .value(
+                                        "INV001"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.name")
+                                .value(
+                                        "Bharath"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.role")
+                                .value(
+                                        "INVESTOR"
+                                )
+                )
+                .andExpect(
+                        request()
+                                .sessionAttribute(
+                                        "USER_ID",
+                                        "INV001"
+                                )
+                )
+                .andExpect(
+                        request()
+                                .sessionAttribute(
+                                        "ROLE",
+                                        "INVESTOR"
+                                )
+                );
+    }
+
+
+    // =========================================================
+    // INVESTOR LOGIN FAILURE
+    // =========================================================
+
+    @Test
+    void shouldReturn401ForInvalidInvestorLogin()
+            throws Exception {
+
+        when(
+                investorService
+                        .authenticateInvestor(
+                                "INV001",
+                                "Wrong"
+                        )
+        )
+                .thenReturn(
+                        null
+                );
+
+
+        mockMvc.perform(
+                        post(
+                                "/api/auth/investor/login"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                        {
+                                          "userId":"INV001",
+                                          "password":"Wrong"
+                                        }
+                                        """)
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                )
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Invalid Investor ID or Password."
+                                )
+                );
+    }
+
+
+    // =========================================================
+    // INVESTOR LOGIN VALIDATION FAILURE
+    // =========================================================
+
+    @Test
+    void shouldReturn400WhenInvestorLoginFieldsAreBlank()
+            throws Exception {
+
+        mockMvc.perform(
+                        post(
+                                "/api/auth/investor/login"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                        {
+                                          "userId":"",
+                                          "password":""
+                                        }
+                                        """)
+                )
+                .andExpect(
+                        status().isBadRequest()
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(400)
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.userId")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.password")
+                                .exists()
+                );
+
+
+        verify(
+                investorService,
+                never()
+        )
+                .authenticateInvestor(
+                        anyString(),
+                        anyString()
+                );
+    }
+
+
+    // =========================================================
+    // INVESTOR REGISTRATION SUCCESS
+    // =========================================================
+
+    @Test
+    void shouldRegisterInvestor()
+            throws Exception {
+
+        Investor registeredInvestor =
+                new Investor();
+
+        registeredInvestor.setUserId(
+                "INV001"
+        );
+
+        registeredInvestor.setName(
+                "BHARATH KUMAR"
+        );
+
+
+        when(
+                investorService
+                        .registerInvestor(
+                                any(
+                                        InvestorRegistrationRequest.class
+                                )
+                        )
+        )
+                .thenReturn(
+                        registeredInvestor
+                );
+
+
+        mockMvc.perform(
+                        post(
+                                "/api/auth/investor/register"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                        {
+                                          "name":"Bharath Kumar",
+                                          "email":"bharath@example.com",
+                                          "phoneNumber":"9876543210",
+                                          "password":"Password@1",
+                                          "panNumber":"ABCDE1234F",
+                                          "accountNumber":"123456789",
+                                          "riskProfile":"MODERATE",
+                                          "nominee":{
+                                            "name":"Rahul Kumar",
+                                            "age":30,
+                                            "gender":"MALE",
+                                            "relationship":"BROTHER",
+                                            "accountNumber":"123456789"
+                                          }
+                                        }
+                                        """)
+                )
+                .andExpect(
+                        status().isCreated()
+                )
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Investor registered successfully."
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.userId")
+                                .value(
+                                        "INV001"
+                                )
+                );
+
+
+        verify(
+                investorService,
+                times(1)
+        )
+                .registerInvestor(
+                        any(
+                                InvestorRegistrationRequest.class
+                        )
+                );
+    }
+
+
+    // =========================================================
+    // INVESTOR REGISTRATION VALIDATION FAILURE
+    // =========================================================
+
+    @Test
+    void shouldReturn400WhenInvestorValidationFails()
+            throws Exception {
+
+        mockMvc.perform(
+                        post(
+                                "/api/auth/investor/register"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                        {
+                                          "name":"AAA",
+                                          "email":"invalid-email",
+                                          "phoneNumber":"12345",
+                                          "password":"abc",
+                                          "panNumber":"ABC",
+                                          "accountNumber":"123",
+                                          "riskProfile":"MODERATE",
+                                          "nominee":{
+                                            "name":"BBB",
+                                            "age":0,
+                                            "gender":"OTHER",
+                                            "relationship":"",
+                                            "accountNumber":"123"
+                                          }
+                                        }
+                                        """)
+                )
+                .andExpect(
+                        status().isBadRequest()
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(400)
+                )
+                .andExpect(
+                        jsonPath("$.error")
+                                .value(
+                                        "Bad Request"
+                                )
                 )
                 .andExpect(
                         jsonPath("$.message")
@@ -296,17 +632,127 @@ class UserLoginControllerTest {
                 )
                 .andExpect(
                         jsonPath("$.fieldErrors.name")
-                                .value(
-                                        "Name must contain at least 4 characters."
-                                )
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.email")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.phoneNumber")
+                                .exists()
                 )
                 .andExpect(
                         jsonPath("$.fieldErrors.password")
-                                .value(
-                                        "Password must contain at least 6 characters, one uppercase letter, one lowercase letter, one digit and one special character."
-                                )
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.panNumber")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.accountNumber")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.fieldErrors['nominee.name']"
+                        )
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.fieldErrors['nominee.age']"
+                        )
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.fieldErrors['nominee.gender']"
+                        )
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.fieldErrors['nominee.relationship']"
+                        )
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.fieldErrors['nominee.accountNumber']"
+                        )
+                                .exists()
+                );
+
+
+        /*
+         * Invalid registration data is rejected by @Valid,
+         * therefore the registration service must not execute.
+         */
+        verify(
+                investorService,
+                never()
+        )
+                .registerInvestor(
+                        any(
+                                InvestorRegistrationRequest.class
+                        )
                 );
     }
+
+
+    // =========================================================
+    // INVESTOR REGISTRATION - NOMINEE MISSING
+    // =========================================================
+
+    @Test
+    void shouldReturn400WhenNomineeIsMissing()
+            throws Exception {
+
+        mockMvc.perform(
+                        post(
+                                "/api/auth/investor/register"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                        {
+                                          "name":"Bharath Kumar",
+                                          "email":"bharath@example.com",
+                                          "phoneNumber":"9876543210",
+                                          "password":"Password@1",
+                                          "panNumber":"ABCDE1234F",
+                                          "accountNumber":"1234567890127654",
+                                          "riskProfile":"MODERATE"
+                                        }
+                                        """)
+                )
+                .andExpect(
+                        status().isBadRequest()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.nominee")
+                                .exists()
+                );
+
+
+        verify(
+                investorService,
+                never()
+        )
+                .registerInvestor(
+                        any(
+                                InvestorRegistrationRequest.class
+                        )
+                );
+    }
+
+
+    // =========================================================
+    // LOGOUT
+    // =========================================================
 
     @Test
     void shouldLogoutAndInvalidateSession()
@@ -315,22 +761,35 @@ class UserLoginControllerTest {
         MockHttpSession session =
                 new MockHttpSession();
 
+
         session.setAttribute(
                 "USER_ID",
                 "INV001"
         );
+
 
         session.setAttribute(
                 "ROLE",
                 "INVESTOR"
         );
 
+
         mockMvc.perform(
-                        post("/api/auth/logout")
-                                .session(session)
+                        post(
+                                "/api/auth/logout"
+                        )
+                                .session(
+                                        session
+                                )
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message")
-                        .value("Logout successful."));
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Logout successful."
+                                )
+                );
     }
 }

@@ -1,11 +1,12 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor;
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorProfileUpdateRequest;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorRegistrationRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.InactiveInvestorResponse;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.InvestorProfileResponse;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Defines investor registration, authentication, profile, validation, and account-status operations.
@@ -21,20 +22,11 @@ public interface I_InvestorService {
      * @return map containing validation errors keyed by field name; empty when validation succeeds
      */
 
-    Map<String, String> validateInvestor(
-            Investor investor
-    );
+//    Map<String, String> validateInvestor(
+//            Investor investor
+//    );
 
-    /**
-     * Registers a new investor after validation, security processing, nominee persistence, and portfolio creation.
-     *
-     * @param investor investor information
-     * @return true when the operation succeeds; otherwise false
-     */
 
-    boolean registerInvestor(
-            Investor investor
-    );
 
     /**
      * Authenticates an active investor using the supplied investor ID and password.
@@ -63,9 +55,7 @@ public interface I_InvestorService {
      * @return true when the operation succeeds; otherwise false
      */
 
-    boolean updateInvestorProfile(
-            Investor investor
-    );
+
 
     /**
      * Soft-deactivates an active investor account without deleting its stored data.
@@ -107,5 +97,24 @@ public interface I_InvestorService {
     InvestorProfileResponse
     getInvestorProfile(
             String investorId
+    );
+
+    /**
+     * Registers an investor using validated registration data.
+     *
+     * Request-format validation is performed before the service
+     * is invoked. The service handles registration business logic,
+     * security processing, persistence, and portfolio creation.
+     *
+     * @param request validated investor registration information
+     * @return newly registered investor
+     */
+    Investor registerInvestor(
+            InvestorRegistrationRequest request
+    );
+
+    InvestorProfileResponse updateInvestorProfile(
+            String investorId,
+            InvestorProfileUpdateRequest request
     );
 }

@@ -1,5 +1,6 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.admin;
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.AdminProfileUpdateRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Admin;
 
 /**
@@ -40,7 +41,8 @@ public interface I_AdminService {
      * @return true when the operation succeeds; otherwise false
      */
 
-    boolean updateAdminProfile(
-            Admin admin
+    Admin updateAdminProfile(
+            String adminId,
+            AdminProfileUpdateRequest request
     );
 }

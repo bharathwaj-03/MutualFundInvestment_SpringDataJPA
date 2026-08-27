@@ -5,14 +5,16 @@ package com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request;
  *
  * This DTO keeps HTTP payload data separate from persistence entities and service-layer models.
  */
+
+import javax.validation.constraints.NotBlank;
 public class LoginRequest {
     /**
      * Unique identifier of the user attempting authentication.
      */
+    @NotBlank(message = "User ID is required.")
     private String userId;
-    /**
-     * Password supplied for authentication.
-     */
+
+    @NotBlank(message = "Password is required.")
     private String password;
 
     /**

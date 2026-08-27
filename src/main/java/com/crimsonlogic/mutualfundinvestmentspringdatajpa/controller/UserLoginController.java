@@ -1,21 +1,24 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorRegistrationRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.LoginRequest;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.ValidationErrorResponse;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Admin;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.admin.I_AdminService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor.I_InvestorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+
 
 /**
  * REST controller for authentication, investor registration, and logout operations.
@@ -55,7 +58,7 @@ public class UserLoginController {
      */
     @PostMapping("/admin/login")
     public ResponseEntity<Map<String, Object>> adminLogin(
-            @RequestBody LoginRequest request,
+            @Valid   @RequestBody LoginRequest request,
             HttpServletRequest httpRequest) {
 
         boolean authenticated =
@@ -133,7 +136,7 @@ public class UserLoginController {
      */
     @PostMapping("/investor/login")
     public ResponseEntity<Map<String, Object>> investorLogin(
-            @RequestBody LoginRequest request,
+         @Valid   @RequestBody LoginRequest request,
             HttpServletRequest httpRequest) {
 
         Investor investor =
@@ -209,80 +212,37 @@ public class UserLoginController {
      * @param request value supplied to this endpoint
      * @return HTTP response or data produced by the endpoint
      */
+    /**
+     * Registers a new investor.
+     *
+     * Bean Validation verifies the registration request before
+     * the service operation is executed.
+     *
+     * @param request investor registration information
+     * @return HTTP 201 response when registration succeeds
+     */
     @PostMapping("/investor/register")
-    public ResponseEntity<?> registerInvestor(
-            @RequestBody Investor investor,
-            HttpServletRequest request) {
+    public ResponseEntity<
+            Map<String, Object>>
+    registerInvestor(
 
-        Map<String, String> errors =
-                investorService
-                        .validateInvestor(
-                                investor
-                        );
+            @Valid
+            @RequestBody
+            InvestorRegistrationRequest request) {
 
 
-        if (!errors.isEmpty()) {
-
-            ValidationErrorResponse response =
-                    new ValidationErrorResponse();
-
-            response.setTimestamp(
-                    LocalDateTime.now()
-            );
-
-            response.setStatus(
-                    HttpStatus.BAD_REQUEST.value()
-            );
-
-            response.setError(
-                    HttpStatus.BAD_REQUEST
-                            .getReasonPhrase()
-            );
-
-            response.setMessage(
-                    "Request validation failed."
-            );
-
-
-
-            response.setFieldErrors(
-                    errors
-            );
-
-
-            return ResponseEntity
-                    .status(
-                            HttpStatus.BAD_REQUEST
-                    )
-                    .body(response);
-        }
-
-
-        boolean registered =
+        Investor investor =
                 investorService
                         .registerInvestor(
-                                investor
+                                request
                         );
-
-
-        if (!registered) {
-
-            return ResponseEntity
-                    .status(
-                            HttpStatus.INTERNAL_SERVER_ERROR
-                    )
-                    .body(
-                            message(
-                                    "Unable to register investor."
-                            )
-                    );
-        }
 
 
         Map<String, Object> response =
                 message(
                         "Investor registered successfully."
                 );
+
 
         response.put(
                 "userId",
@@ -291,7 +251,9 @@ public class UserLoginController {
 
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(
+                        HttpStatus.CREATED
+                )
                 .body(response);
     }
 

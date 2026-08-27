@@ -129,9 +129,45 @@ dependencies {
     testImplementation(
             "com.h2database:h2:2.2.224"
     )
+
+    implementation ("javax.validation:validation-api:2.0.1.Final")
+    implementation ("org.hibernate.validator:hibernate-validator:6.2.5.Final")
+
+    implementation ("org.glassfish:javax.el:3.0.1-b12")
 }
 
 tasks.test {
+
     useJUnitPlatform()
+
+    testLogging {
+        events(
+                "passed",
+                "failed",
+                "skipped"
+        )
+
+        showStandardStreams = true
+    }
+
+    afterSuite(
+            KotlinClosure2<TestDescriptor, TestResult, Unit>(
+                    { descriptor, result ->
+
+                        if (descriptor.parent == null) {
+
+                            println()
+                            println("========================================")
+                            println("TEST SUMMARY")
+                            println("========================================")
+                            println("Total Tests  : ${result.testCount}")
+                            println("Passed Tests : ${result.successfulTestCount}")
+                            println("Failed Tests : ${result.failedTestCount}")
+
+                            println("========================================")
+                        }
+                    }
+            )
+    )
 }
 
