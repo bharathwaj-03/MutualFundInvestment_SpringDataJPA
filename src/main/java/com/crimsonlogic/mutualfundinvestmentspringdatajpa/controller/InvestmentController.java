@@ -6,14 +6,13 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotF
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.financeactivity.Investment;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.interfaces.Payable;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investment.I_InvestmentService;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +51,7 @@ public class InvestmentController {
     @PostMapping
     public ResponseEntity<InvestmentResponse>
     createInvestment(
-            @RequestBody InvestmentRequest request,
+         @Valid @RequestBody InvestmentRequest request,
             HttpServletRequest httpRequest) {
 
         String investorId =

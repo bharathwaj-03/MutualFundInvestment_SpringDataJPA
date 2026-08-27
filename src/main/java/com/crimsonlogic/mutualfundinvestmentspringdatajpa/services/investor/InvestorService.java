@@ -115,9 +115,9 @@ public class InvestorService implements I_InvestorService {
             );
 
 
-            investor.setRiskProfile(
-                    request.getRiskProfile()
-            );
+//            investor.setRiskProfile(
+//                    request.getRiskProfile()
+//            );
 
 
             investor.setUserRole(

@@ -1,38 +1,62 @@
-package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
+package com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .controller;
 
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.SIPRequest;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.SIPResponse;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotFoundException;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.financeactivity.SIP;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.interfaces.Payable;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.sip.I_SIPService;
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .dto.request.SIPRequest;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .dto.response.SIPResponse;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .exception.ResourceNotFoundException;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .model.financeactivity.SIP;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .model.interfaces.Payable;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .services.sip.I_SIPService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import javax.validation.Valid;
+
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 
 /**
- * REST controller that handles SIP operations for the logged-in investor.
+ * REST controller that handles SIP operations
+ * for the logged-in investor.
  */
 @RestController
 @RequestMapping("/api/investor/sip")
 public class SIPController {
 
-    private final I_SIPService sipService;
+
+    private final I_SIPService
+            sipService;
 
 
     /**
-     * Creates this controller with the dependencies required to handle its HTTP operations.
+     * Creates the controller with its required SIP service.
      *
-     * @param sipService value supplied to this endpoint
+     * @param sipService service used for SIP business operations
      */
     public SIPController(
             I_SIPService sipService) {
@@ -42,49 +66,31 @@ public class SIPController {
     }
 
 
-
     /**
-     * Creates a SIP for the logged-in investor after request and payment validation.
+     * Creates a SIP for the logged-in investor.
      *
-     * @param request value supplied to this endpoint
-     * @param httpRequest value supplied to this endpoint
-     * @return HTTP response or data produced by the endpoint
+     * Bean Validation checks the SIP request and nested
+     * payment request before the service workflow executes.
+     *
+     * @param request validated SIP information
+     * @param httpRequest current HTTP request
+     * @return newly created SIP information
      */
     @PostMapping
-    public ResponseEntity<?> startSIP(
-            @RequestBody SIPRequest request,
+    public ResponseEntity<SIPResponse>
+    startSIP(
+
+            @Valid
+            @RequestBody
+            SIPRequest request,
+
             HttpServletRequest httpRequest) {
+
 
         String investorId =
                 getLoggedInInvestorId(
                         httpRequest
                 );
-
-
-        String paymentType =
-                request.getPayment() == null
-                        ? null
-                        : request
-                        .getPayment()
-                        .getPaymentType();
-
-
-        Map<String, String> errors =
-                sipService.validateSIP(
-                        request.getFundId(),
-                        request.getMonthlyAmount(),
-                        request.getInvestmentYears(),
-                        request.getStartDate(),
-                        paymentType
-                );
-
-
-        if (!errors.isEmpty()) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(errors);
-        }
 
 
         Payable paymentMethod =
@@ -94,14 +100,15 @@ public class SIPController {
 
 
         SIP sip =
-                sipService.startSIP(
-                        investorId,
-                        request.getFundId(),
-                        request.getMonthlyAmount(),
-                        request.getStartDate(),
-                        request.getInvestmentYears(),
-                        paymentMethod
-                );
+                sipService
+                        .startSIP(
+                                investorId,
+                                request.getFundId(),
+                                request.getMonthlyAmount(),
+                                request.getStartDate(),
+                                request.getInvestmentYears(),
+                                paymentMethod
+                        );
 
 
         SIPResponse response =
@@ -111,22 +118,26 @@ public class SIPController {
 
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+                .status(
+                        HttpStatus.CREATED
+                )
+                .body(
+                        response
+                );
     }
-
 
 
     /**
      * Returns all SIPs belonging to the logged-in investor.
      *
-     * @param httpRequest value supplied to this endpoint
-     * @return HTTP response or data produced by the endpoint
+     * @param httpRequest current HTTP request
+     * @return investor SIP records
      */
     @GetMapping
     public ResponseEntity<List<SIPResponse>>
     getMySIPs(
             HttpServletRequest httpRequest) {
+
 
         String investorId =
                 getLoggedInInvestorId(
@@ -135,14 +146,18 @@ public class SIPController {
 
 
         List<SIP> sips =
-                sipService.getSIPsByUser(
-                        investorId
-                );
+                sipService
+                        .getSIPsByUser(
+                                investorId
+                        );
 
 
         List<SIPResponse> response =
-                sips.stream()
-                        .map(this::convertToResponse)
+                sips
+                        .stream()
+                        .map(
+                                this::convertToResponse
+                        )
                         .collect(
                                 Collectors.toList()
                         );
@@ -154,19 +169,21 @@ public class SIPController {
     }
 
 
-
     /**
-     * Returns one SIP identified by its SIP ID.
+     * Returns one SIP belonging to the logged-in investor.
      *
-     * @param sipId value supplied to this endpoint
-     * @param httpRequest value supplied to this endpoint
-     * @return HTTP response or data produced by the endpoint
+     * @param sipId SIP identifier
+     * @param httpRequest current HTTP request
+     * @return requested SIP
      */
     @GetMapping("/{sipId}")
     public ResponseEntity<SIPResponse>
     getSIPById(
-            @PathVariable String sipId,
+            @PathVariable
+            String sipId,
+
             HttpServletRequest httpRequest) {
+
 
         String investorId =
                 getLoggedInInvestorId(
@@ -175,17 +192,19 @@ public class SIPController {
 
 
         SIP sip =
-                sipService.getSIPById(
-                        sipId
-                );
-
+                sipService
+                        .getSIPById(
+                                sipId
+                        );
 
 
         if (sip.getInvestor() == null ||
                 !investorId.equals(
-                        sip.getInvestor()
+                        sip
+                                .getInvestor()
                                 .getUserId()
                 )) {
+
 
             throw new ResourceNotFoundException(
                     "SIP not found with id: "
@@ -202,19 +221,21 @@ public class SIPController {
     }
 
 
-
     /**
-     * Cancels a SIP only when it belongs to the logged-in investor.
+     * Cancels a SIP belonging to the logged-in investor.
      *
-     * @param sipId value supplied to this endpoint
-     * @param httpRequest value supplied to this endpoint
-     * @return HTTP response or data produced by the endpoint
+     * @param sipId SIP identifier
+     * @param httpRequest current HTTP request
+     * @return updated SIP
      */
     @PatchMapping("/{sipId}/cancel")
     public ResponseEntity<SIPResponse>
     cancelSIP(
-            @PathVariable String sipId,
+            @PathVariable
+            String sipId,
+
             HttpServletRequest httpRequest) {
+
 
         String investorId =
                 getLoggedInInvestorId(
@@ -223,16 +244,19 @@ public class SIPController {
 
 
         SIP existing =
-                sipService.getSIPById(
-                        sipId
-                );
+                sipService
+                        .getSIPById(
+                                sipId
+                        );
 
 
         if (existing.getInvestor() == null ||
                 !investorId.equals(
-                        existing.getInvestor()
+                        existing
+                                .getInvestor()
                                 .getUserId()
                 )) {
+
 
             throw new ResourceNotFoundException(
                     "SIP not found with id: "
@@ -241,9 +265,11 @@ public class SIPController {
         }
 
 
-        if (!sipService.cancelSIP(
-                sipId
-        )) {
+        if (!sipService
+                .cancelSIP(
+                        sipId
+                )) {
+
 
             throw new ResourceNotFoundException(
                     "Unable to cancel SIP with id: "
@@ -253,9 +279,10 @@ public class SIPController {
 
 
         SIP updated =
-                sipService.getSIPById(
-                        sipId
-                );
+                sipService
+                        .getSIPById(
+                                sipId
+                        );
 
 
         return ResponseEntity.ok(
@@ -266,12 +293,17 @@ public class SIPController {
     }
 
 
-
+    /**
+     * Returns the investor ID stored in the active session.
+     */
     private String getLoggedInInvestorId(
             HttpServletRequest request) {
 
+
         HttpSession session =
-                request.getSession(false);
+                request.getSession(
+                        false
+                );
 
 
         if (session == null) {
@@ -300,9 +332,12 @@ public class SIPController {
     }
 
 
-
+    /**
+     * Converts a SIP entity into its API response DTO.
+     */
     private SIPResponse convertToResponse(
             SIP sip) {
+
 
         SIPResponse response =
                 new SIPResponse();
@@ -312,66 +347,86 @@ public class SIPController {
                 sip.getSipId()
         );
 
+
         response.setMonthlyAmount(
                 sip.getMonthlyAmount()
         );
+
 
         response.setUnitsPurchased(
                 sip.getUnitsPurchased()
         );
 
+
         response.setActivityDate(
                 sip.getActivityDate()
         );
+
 
         response.setStartDate(
                 sip.getStartDate()
         );
 
+
         response.setNextInstallmentDate(
                 sip.getNextInstallmentDate()
         );
+
 
         response.setInvestmentYears(
                 sip.getInvestmentYears()
         );
 
+
         response.setAssetGainPerYear(
                 sip.getAssetGainPerYear()
         );
 
+
         response.setAssetGainTotalInvestedYears(
-                sip.getAssetGainTotalInvestedYears()
+                sip
+                        .getAssetGainTotalInvestedYears()
         );
+
 
         response.setSipStatus(
                 sip.getSipStatus()
         );
 
 
-        if (sip.getInvestor() != null) {
+        if (sip.getInvestor()
+                != null) {
+
 
             response.setInvestorId(
-                    sip.getInvestor()
+                    sip
+                            .getInvestor()
                             .getUserId()
             );
 
+
             response.setInvestorName(
-                    sip.getInvestor()
+                    sip
+                            .getInvestor()
                             .getName()
             );
         }
 
 
-        if (sip.getMutualFund() != null) {
+        if (sip.getMutualFund()
+                != null) {
+
 
             response.setFundId(
-                    sip.getMutualFund()
+                    sip
+                            .getMutualFund()
                             .getFundId()
             );
 
+
             response.setFundName(
-                    sip.getMutualFund()
+                    sip
+                            .getMutualFund()
                             .getFundName()
             );
         }

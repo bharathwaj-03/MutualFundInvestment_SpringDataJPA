@@ -129,10 +129,10 @@ public class InvestorRegistrationRequest {
     private String accountNumber;
 
 
-    /**
-     * Risk profile selected for the investor.
-     */
-    private String riskProfile;
+//    /**
+//     * Risk profile selected for the investor.
+//     */
+//    private String riskProfile;
 
 
     /**
@@ -227,17 +227,7 @@ public class InvestorRegistrationRequest {
     }
 
 
-    public String getRiskProfile() {
-        return riskProfile;
-    }
 
-
-    public void setRiskProfile(
-            String riskProfile) {
-
-        this.riskProfile =
-                riskProfile;
-    }
 
 
     public NomineeRegistrationRequest

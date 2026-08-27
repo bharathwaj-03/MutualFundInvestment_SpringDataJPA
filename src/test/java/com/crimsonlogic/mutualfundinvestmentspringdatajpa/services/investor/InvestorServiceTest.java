@@ -101,9 +101,9 @@ class InvestorServiceTest {
                 "123456789012"
         );
 
-        request.setRiskProfile(
-                "MODERATE"
-        );
+//        request.setRiskProfile(
+//                "MODERATE"
+//        );
 
 
         NomineeRegistrationRequest nominee =
