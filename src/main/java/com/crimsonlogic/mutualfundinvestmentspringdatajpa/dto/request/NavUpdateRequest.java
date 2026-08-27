@@ -1,43 +1,74 @@
-package com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request;
+package com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .dto.request;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Positive;
 
 /**
- * Data transfer object used to receive nav update data from an API request.
- *
- * This DTO keeps HTTP payload data separate from persistence entities and service-layer models.
+ * Request DTO used when an administrator updates
+ * the NAV of a mutual fund.
  */
 public class NavUpdateRequest {
+
     /**
-     * Updated Net Asset Value supplied by the administrator.
+     * New NAV value to assign to the fund.
      */
-    private double newNav;
+    @NotNull(
+            message =
+                    "New NAV is required."
+    )
+    @Positive(
+            message =
+                    "NAV must be greater than 0."
+    )
+    private Double newNav;
+
+
     /**
-     * Identifier of the administrator performing the operation.
+     * Identifier of the administrator performing the NAV update.
      */
+    @NotBlank(
+            message =
+                    "Admin ID is required."
+    )
+    @Pattern(
+            regexp =
+                    "^ADM[0-9]{3}$",
+            message =
+                    "Invalid Admin ID. Example: ADM001."
+    )
     private String adminId;
 
-    /**
-     * Creates a NavUpdateRequest object. This no-argument constructor supports request/response binding and object creation.
-     */
-    public NavUpdateRequest() {}
 
-    /**
-     * Returns the new nav.
-     * @return updated Net Asset Value supplied by the administrator.
-     */
-    public double getNewNav() { return newNav; }
-    /**
-     * Updates the new nav carried by this DTO.
-     * @param newNav updated Net Asset Value supplied by the administrator.
-     */
-    public void setNewNav(double newNav) { this.newNav = newNav; }
-    /**
-     * Returns the admin id.
-     * @return identifier of the administrator performing the operation.
-     */
-    public String getAdminId() { return adminId; }
-    /**
-     * Updates the admin id carried by this DTO.
-     * @param adminId identifier of the administrator performing the operation.
-     */
-    public void setAdminId(String adminId) { this.adminId = adminId; }
+    public NavUpdateRequest() {
+    }
+
+
+    public Double getNewNav() {
+        return newNav;
+    }
+
+
+    public void setNewNav(
+            Double newNav) {
+
+        this.newNav =
+                newNav;
+    }
+
+
+    public String getAdminId() {
+        return adminId;
+    }
+
+
+    public void setAdminId(
+            String adminId) {
+
+        this.adminId =
+                adminId;
+    }
 }

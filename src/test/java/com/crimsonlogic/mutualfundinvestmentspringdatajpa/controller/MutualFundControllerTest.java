@@ -4,6 +4,14 @@ package com.crimsonlogic
 
 import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa
+        .exception.GlobalExceptionHandler;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .exception.ResourceNotFoundException;
+
+import com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
         .model.abstraction.MutualFund;
 
 import com.crimsonlogic
@@ -67,6 +75,9 @@ class MutualFundControllerTest {
                                         navHistoryService
                                 )
                         )
+                        .setControllerAdvice(
+                                new GlobalExceptionHandler()
+                        )
                         .build();
     }
 
@@ -87,18 +98,18 @@ class MutualFundControllerTest {
                                         "application/json"
                                 )
                                 .content("""
-                                    {
-                                      "fundCode":"EQ001",
-                                      "fundName":"Equity Growth Fund",
-                                      "fundHouse":"ABC Mutual Fund",
-                                      "fundCategory":"Equity Fund",
-                                      "riskLevel":"HIGH",
-                                      "nav":100.0,
-                                      "minimumInvestment":5000.0,
-                                      "sipGainPerYear":12.0,
-                                      "lumpSumGainPerYear":15.0
-                                    }
-                                    """)
+                                        {
+                                          "fundCode":"EQ001",
+                                          "fundName":"Equity Growth Fund",
+                                          "fundHouse":"ABC Mutual Fund",
+                                          "fundCategory":"Equity Fund",
+                                          "riskLevel":"HIGH",
+                                          "nav":100.0,
+                                          "minimumInvestment":5000.0,
+                                          "sipGainPerYear":12.0,
+                                          "lumpSumGainPerYear":15.0
+                                        }
+                                        """)
                 )
                 .andExpect(
                         status().isCreated()
@@ -143,7 +154,6 @@ class MutualFundControllerTest {
                 "Old Fund"
         );
 
-
         when(
                 mutualFundService
                         .getFundById(
@@ -154,7 +164,6 @@ class MutualFundControllerTest {
                         existing
                 );
 
-
         mockMvc.perform(
                         put(
                                 "/api/admin/funds/FND001"
@@ -163,18 +172,18 @@ class MutualFundControllerTest {
                                         "application/json"
                                 )
                                 .content("""
-                                    {
-                                      "fundCode":"EQ001",
-                                      "fundName":"Updated Equity Fund",
-                                      "fundHouse":"ABC Mutual Fund",
-                                      "fundCategory":"Equity Fund",
-                                      "riskLevel":"HIGH",
-                                      "nav":120.0,
-                                      "minimumInvestment":5000.0,
-                                      "sipGainPerYear":12.0,
-                                      "lumpSumGainPerYear":15.0
-                                    }
-                                    """)
+                                        {
+                                          "fundCode":"EQ001",
+                                          "fundName":"Updated Equity Fund",
+                                          "fundHouse":"ABC Mutual Fund",
+                                          "fundCategory":"Equity Fund",
+                                          "riskLevel":"HIGH",
+                                          "nav":120.0,
+                                          "minimumInvestment":5000.0,
+                                          "sipGainPerYear":12.0,
+                                          "lumpSumGainPerYear":15.0
+                                        }
+                                        """)
                 )
                 .andExpect(
                         status().isOk()
@@ -189,7 +198,6 @@ class MutualFundControllerTest {
                                         "Updated Equity Fund"
                                 )
                 );
-
 
         verify(
                 mutualFundService
@@ -214,10 +222,11 @@ class MutualFundControllerTest {
                                 "FND404"
                         )
         )
-                .thenReturn(
-                        null
+                .thenThrow(
+                        new ResourceNotFoundException(
+                                "Mutual fund not found with id: FND404"
+                        )
                 );
-
 
         mockMvc.perform(
                         put(
@@ -244,7 +253,6 @@ class MutualFundControllerTest {
                         status().isNotFound()
                 );
 
-
         verify(
                 mutualFundService,
                 never()
@@ -270,7 +278,6 @@ class MutualFundControllerTest {
                 "FND001"
         );
 
-
         when(
                 mutualFundService
                         .getFundById(
@@ -281,7 +288,6 @@ class MutualFundControllerTest {
                         fund
                 );
 
-
         mockMvc.perform(
                         delete(
                                 "/api/admin/funds/FND001"
@@ -290,7 +296,6 @@ class MutualFundControllerTest {
                 .andExpect(
                         status().isNoContent()
                 );
-
 
         verify(
                 mutualFundService
@@ -309,16 +314,17 @@ class MutualFundControllerTest {
     void shouldReturn404WhenDeletingMissingFund()
             throws Exception {
 
-        when(
-                mutualFundService
-                        .getFundById(
-                                "FND404"
-                        )
+        doThrow(
+                new ResourceNotFoundException(
+                        "Mutual fund not found with id: FND404"
+                )
         )
-                .thenReturn(
-                        null
+                .when(
+                        mutualFundService
+                )
+                .deleteFund(
+                        "FND404"
                 );
-
 
         mockMvc.perform(
                         delete(
@@ -329,13 +335,11 @@ class MutualFundControllerTest {
                         status().isNotFound()
                 );
 
-
         verify(
-                mutualFundService,
-                never()
+                mutualFundService
         )
                 .deleteFund(
-                        anyString()
+                        "FND404"
                 );
     }
 
@@ -359,7 +363,6 @@ class MutualFundControllerTest {
                 120.0
         );
 
-
         when(
                 mutualFundService
                         .getFundById(
@@ -369,7 +372,6 @@ class MutualFundControllerTest {
                 .thenReturn(
                         fund
                 );
-
 
         mockMvc.perform(
                         patch(
@@ -397,7 +399,6 @@ class MutualFundControllerTest {
                                 .value(120.0)
                 );
 
-
         verify(
                 mutualFundService
         )
@@ -417,16 +418,19 @@ class MutualFundControllerTest {
     void shouldReturn404WhenUpdatingNAVForMissingFund()
             throws Exception {
 
-        when(
-                mutualFundService
-                        .getFundById(
-                                "FND404"
-                        )
+        doThrow(
+                new ResourceNotFoundException(
+                        "Mutual fund not found with id: FND404"
+                )
         )
-                .thenReturn(
-                        null
+                .when(
+                        mutualFundService
+                )
+                .updateNAV(
+                        "FND404",
+                        120.0,
+                        "ADM001"
                 );
-
 
         mockMvc.perform(
                         patch(
@@ -446,15 +450,13 @@ class MutualFundControllerTest {
                         status().isNotFound()
                 );
 
-
         verify(
-                mutualFundService,
-                never()
+                mutualFundService
         )
                 .updateNAV(
-                        anyString(),
-                        anyDouble(),
-                        anyString()
+                        "FND404",
+                        120.0,
+                        "ADM001"
                 );
     }
 
@@ -474,7 +476,6 @@ class MutualFundControllerTest {
                 "NAV001"
         );
 
-
         when(
                 navHistoryService
                         .getAllNAVHistory()
@@ -484,7 +485,6 @@ class MutualFundControllerTest {
                                 history
                         )
                 );
-
 
         mockMvc.perform(
                         get(
@@ -502,7 +502,6 @@ class MutualFundControllerTest {
                                         "NAV001"
                                 )
                 );
-
 
         verify(
                 navHistoryService
@@ -526,7 +525,6 @@ class MutualFundControllerTest {
                 "NAV001"
         );
 
-
         MutualFund fund =
                 new EquityFund();
 
@@ -538,11 +536,9 @@ class MutualFundControllerTest {
                 "Equity Growth Fund"
         );
 
-
         history.setMutualFund(
                 fund
         );
-
 
         when(
                 navHistoryService
@@ -555,7 +551,6 @@ class MutualFundControllerTest {
                                 history
                         )
                 );
-
 
         mockMvc.perform(
                         get(
@@ -581,7 +576,6 @@ class MutualFundControllerTest {
                                         "FND001"
                                 )
                 );
-
 
         verify(
                 navHistoryService
