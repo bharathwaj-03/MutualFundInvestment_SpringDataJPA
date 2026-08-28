@@ -389,6 +389,10 @@ public class MutualFundController {
                         .trim()
         );
 
+        fund.setFundCategory(
+                request.getFundCategory().trim()
+        );
+
 
         fund.setRiskLevel(
                 request

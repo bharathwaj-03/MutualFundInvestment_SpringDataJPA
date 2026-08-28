@@ -3,6 +3,7 @@ package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.navhistory;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.InvalidRequestException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.nav.NAVHistory;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.NAVHistoryRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -18,12 +19,21 @@ class NAVHistoryServiceTest {
     @Mock
     private NAVHistoryRepository navHistoryRepository;
 
+    private AutoCloseable mocks;
+
     private NAVHistoryService navHistoryService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         navHistoryService = new NAVHistoryService(navHistoryRepository);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

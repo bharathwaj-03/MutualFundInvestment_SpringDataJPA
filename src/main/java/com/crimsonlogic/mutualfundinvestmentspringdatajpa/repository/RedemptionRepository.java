@@ -74,4 +74,30 @@ public interface RedemptionRepository
                     "ORDER BY r.activityDate DESC"
     )
     List<Redemption> findAllWithRelations();
+
+
+    /**
+     * Returns redemptions belonging to investors with the
+     * requested active status.
+     *
+     * Investor, mutual fund, and transaction relationships
+     * are eagerly loaded for safe response conversion.
+     *
+     * @param active investor account status
+     * @return matching redemption records ordered by activity date
+     */
+    @Query(
+            "SELECT r " +
+                    "FROM Redemption r " +
+                    "JOIN FETCH r.investor i " +
+                    "JOIN FETCH r.mutualFund mf " +
+                    "LEFT JOIN FETCH r.transaction t " +
+                    "WHERE i.active = :active " +
+                    "ORDER BY r.activityDate DESC"
+    )
+    List<Redemption>
+    findByInvestorActiveWithRelations(
+            @Param("active")
+            boolean active
+    );
 }

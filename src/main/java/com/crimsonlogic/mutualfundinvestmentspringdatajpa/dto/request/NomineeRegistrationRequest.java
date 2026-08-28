@@ -84,8 +84,31 @@ public class NomineeRegistrationRequest {
      */
     @NotBlank(
             message =
-                    "Please enter relationship with nominee."
+                    "Relationship  is required."
     )
+    @Size(
+            min = 3,
+            max = 50,
+            message =
+                    "Relationship must contain 3 to 50 characters."
+    )
+    @Pattern.List({
+
+            @Pattern(
+                    regexp =
+                            "^[A-Za-z]+(?: [A-Za-z]+)*$",
+                    message =
+                            "Relationship should contain only alphabets and spaces."
+            ),
+
+            @Pattern(
+                    regexp =
+                            "(?i)^(?!.*([a-z])\\1\\1).*$",
+                    message =
+                            "Relationship should not contain the same character "
+                                    + "3 times continuously."
+            )
+    })
     private String relationship;
 
 

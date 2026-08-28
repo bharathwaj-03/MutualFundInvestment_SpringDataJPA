@@ -1,6 +1,4 @@
-package com.crimsonlogic
-        .mutualfundinvestmentspringdatajpa
-        .services.admin;
+package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.admin;
 
 import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa

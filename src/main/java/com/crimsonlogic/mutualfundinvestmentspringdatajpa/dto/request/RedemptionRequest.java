@@ -1,57 +1,79 @@
-package com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request;
+package com.crimsonlogic
+        .mutualfundinvestmentspringdatajpa
+        .dto.request;
+
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
- * Data transfer object used to receive redemption data from an API request.
- *
- * This DTO keeps HTTP payload data separate from persistence entities and service-layer models.
+ * Data transfer object used to receive redemption data
+ * from an API request.
  */
 public class RedemptionRequest {
+
     /**
-     * Unique identifier of the investor associated with the request or response.
+     * Unique identifier of the investor.
      */
     private String investorId;
+
+
     /**
      * Unique identifier of the holding being redeemed.
      */
+    @NotBlank(
+            message = "Holding ID is required."
+    )
     private String holdingId;
+
+
     /**
      * Number of mutual fund units requested for redemption.
      */
-    private double units;
+    @NotNull(
+            message = "Units are required."
+    )
+    @DecimalMin(
+            value = "1.0",
+            inclusive = true,
+            message = "Units to redeem must be at least 1."
+    )
+    private Double units;
 
-    /**
-     * Creates a RedemptionRequest object. This no-argument constructor supports request/response binding and object creation.
-     */
-    public RedemptionRequest() {}
 
-    /**
-     * Returns the investor id.
-     * @return unique identifier of the investor associated with the request or response.
-     */
-    public String getInvestorId() { return investorId; }
-    /**
-     * Updates the investor id carried by this DTO.
-     * @param investorId unique identifier of the investor associated with the request or response.
-     */
-    public void setInvestorId(String investorId) { this.investorId = investorId; }
-    /**
-     * Returns the holding id.
-     * @return unique identifier of the holding being redeemed.
-     */
-    public String getHoldingId() { return holdingId; }
-    /**
-     * Updates the holding id carried by this DTO.
-     * @param holdingId unique identifier of the holding being redeemed.
-     */
-    public void setHoldingId(String holdingId) { this.holdingId = holdingId; }
-    /**
-     * Returns the units.
-     * @return number of mutual fund units requested for redemption.
-     */
-    public double getUnits() { return units; }
-    /**
-     * Updates the units carried by this DTO.
-     * @param units number of mutual fund units requested for redemption.
-     */
-    public void setUnits(double units) { this.units = units; }
+    public RedemptionRequest() {
+    }
+
+
+    public String getInvestorId() {
+        return investorId;
+    }
+
+    public void setInvestorId(
+            String investorId) {
+
+        this.investorId = investorId;
+    }
+
+
+    public String getHoldingId() {
+        return holdingId;
+    }
+
+    public void setHoldingId(
+            String holdingId) {
+
+        this.holdingId = holdingId;
+    }
+
+
+    public Double getUnits() {
+        return units;
+    }
+
+    public void setUnits(
+            Double units) {
+
+        this.units = units;
+    }
 }

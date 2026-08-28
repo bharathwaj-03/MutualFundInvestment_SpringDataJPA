@@ -1,6 +1,4 @@
-package com.crimsonlogic
-        .mutualfundinvestmentspringdatajpa
-        .controller;
+package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
 import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa
@@ -30,6 +28,7 @@ import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa
         .services.navhistory.I_NAVHistoryService;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -584,4 +583,14 @@ class MutualFundControllerTest {
                         "FND001"
                 );
     }
+
+    @AfterEach
+    void tearDown() {
+
+        reset(
+                mutualFundService,
+                navHistoryService
+        );
+    }
+
 }

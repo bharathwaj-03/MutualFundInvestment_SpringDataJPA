@@ -236,7 +236,7 @@ public class AdminService implements I_AdminService {
     /**
      * Updates editable administrator profile information.
      *
-     * @param admin administrator information
+     * @param adminId administrator information
      * @return true when the operation succeeds; otherwise false
      */
     @Override
@@ -285,6 +285,45 @@ public class AdminService implements I_AdminService {
 
 
         return adminRepository.save(
+                admin
+        );
+    }
+
+    /**
+     * Updates an administrator password after hashing
+     * the supplied plain-text password.
+     *
+     * @param adminId administrator identifier
+     * @param newPassword new plain password
+     */
+    @Override
+    public void updateAdminPassword(
+            String adminId,
+            String newPassword) {
+
+
+        Admin admin =
+                adminRepository
+                        .findById(
+                                adminId
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Admin not found with id: "
+                                                        + adminId
+                                        )
+                        );
+
+
+        admin.setPassword(
+                PasswordUtil.hashPassword(
+                        newPassword
+                )
+        );
+
+
+        adminRepository.save(
                 admin
         );
     }

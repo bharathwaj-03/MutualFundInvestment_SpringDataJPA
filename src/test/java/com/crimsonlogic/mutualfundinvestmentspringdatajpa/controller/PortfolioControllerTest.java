@@ -3,6 +3,7 @@ package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.portfolio.Portfolio;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.portfolio.I_PortfolioService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -89,4 +90,13 @@ class PortfolioControllerTest {
                 .andExpect(jsonPath("$.currentValue")
                         .value(42000.0));
     }
+
+    @AfterEach
+    void tearDown() {
+
+        reset(
+                portfolioService
+        );
+    }
+
 }

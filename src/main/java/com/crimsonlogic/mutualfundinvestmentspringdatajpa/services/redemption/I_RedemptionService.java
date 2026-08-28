@@ -77,4 +77,17 @@ public interface I_RedemptionService {
     Redemption getRedemptionById(
             String redemptionId
     );
+
+    /**
+     * Retrieves redemption records according to
+     * investor account status.
+     *
+     * @param active true for active investors and
+     *               false for inactive investors
+     * @return matching redemption records
+     */
+    List<Redemption>
+    getRedemptionsByInvestorStatus(
+            boolean active
+    );
 }

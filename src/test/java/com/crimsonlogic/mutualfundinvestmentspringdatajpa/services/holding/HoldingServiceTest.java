@@ -1,9 +1,9 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.holding;
 
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.InvalidRequestException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotFoundException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.portfolio.Holding;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.HoldingRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -20,12 +20,21 @@ class HoldingServiceTest {
     @Mock
     private HoldingRepository holdingRepository;
 
+    private AutoCloseable mocks;
+
     private HoldingService holdingService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         holdingService = new HoldingService(holdingRepository);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

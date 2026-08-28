@@ -2,6 +2,7 @@ package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.financeactivity.SIP;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.sip.I_SIPService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -77,4 +78,13 @@ class AdminSIPControllerTest {
                 .andExpect(jsonPath("$.sipId")
                         .value("SIP001"));
     }
+
+    @AfterEach
+    void tearDown() {
+
+        reset(
+                sipService
+        );
+    }
+
 }

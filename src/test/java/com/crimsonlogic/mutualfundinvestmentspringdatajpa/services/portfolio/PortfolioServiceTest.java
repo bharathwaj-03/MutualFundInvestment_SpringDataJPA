@@ -5,6 +5,7 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.portfolio.Portfo
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.InvestorRepository;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.PortfolioRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -24,13 +25,22 @@ class PortfolioServiceTest {
     @Mock
     private InvestorRepository investorRepository;
 
+    private AutoCloseable mocks;
+
     private PortfolioService portfolioService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         portfolioService =
                 new PortfolioService(portfolioRepository, investorRepository);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

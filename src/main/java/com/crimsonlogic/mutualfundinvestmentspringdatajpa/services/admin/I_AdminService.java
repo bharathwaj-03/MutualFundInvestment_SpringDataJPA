@@ -37,12 +37,23 @@ public interface I_AdminService {
     /**
      * Updates editable administrator profile information.
      *
-     * @param admin administrator information
+     * @param adminId administrator information
      * @return true when the operation succeeds; otherwise false
      */
 
     Admin updateAdminProfile(
             String adminId,
             AdminProfileUpdateRequest request
+    );
+
+    /**
+     * Updates the password of an existing administrator.
+     *
+     * @param adminId administrator identifier
+     * @param newPassword new plain password to be hashed
+     */
+    void updateAdminPassword(
+            String adminId,
+            String newPassword
     );
 }

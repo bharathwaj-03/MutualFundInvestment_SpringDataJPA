@@ -55,9 +55,7 @@ public class PaymentRequest {
      * Required only when paymentType = CARD.
      */
 
-    @NotBlank(
-            message = "Name is required."
-    )
+
     @Size(
             min = 3,
             max = 50,

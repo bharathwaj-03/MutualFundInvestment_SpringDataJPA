@@ -1,12 +1,15 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorProfileUpdateRequest;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.PasswordUpdateRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.response.InvestorProfileResponse;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor.I_InvestorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * REST controller that exposes investor profile retrieval and update APIs.
@@ -51,7 +54,6 @@ public class InvestorProfileController {
      * Updates profile information for the requested identifier.
      *
      * @param investorId value supplied to this endpoint
-     * @param investor value supplied to this endpoint
      * @return HTTP response or data produced by the endpoint
      */
     @PutMapping("/{investorId}")
@@ -72,6 +74,52 @@ public class InvestorProfileController {
                                 investorId,
                                 request
                         )
+        );
+    }
+
+    /**
+     * Updates the password of the requested investor.
+     *
+     * @param investorId investor identifier
+     * @param request validated password information
+     * @return password update confirmation
+     */
+    @PatchMapping("/{investorId}/password")
+    public ResponseEntity<Map<String, Object>>
+    updatePassword(
+            @PathVariable
+            String investorId,
+
+            @Valid
+            @RequestBody
+            PasswordUpdateRequest request) {
+
+
+        investorService
+                .updateInvestorPassword(
+                        investorId,
+                        request.getNewPassword()
+                );
+
+
+        Map<String, Object> response =
+                new LinkedHashMap<>();
+
+
+        response.put(
+                "message",
+                "Investor password updated successfully."
+        );
+
+
+        response.put(
+                "investorId",
+                investorId
+        );
+
+
+        return ResponseEntity.ok(
+                response
         );
     }
 }

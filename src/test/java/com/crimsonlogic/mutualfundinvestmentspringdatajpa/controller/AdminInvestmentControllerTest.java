@@ -2,6 +2,7 @@ package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.financeactivity.Investment;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investment.I_InvestmentService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -93,4 +94,13 @@ class AdminInvestmentControllerTest {
                 .andExpect(jsonPath("$.investmentId")
                         .value("INVT001"));
     }
+
+    @AfterEach
+    void tearDown() {
+
+        reset(
+                investmentService
+        );
+    }
+
 }

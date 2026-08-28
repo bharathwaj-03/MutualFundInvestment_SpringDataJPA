@@ -1,12 +1,15 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.AdminProfileUpdateRequest;
+import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.PasswordUpdateRequest;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Admin;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.admin.I_AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * REST controller that exposes administrator profile retrieval and update APIs.
@@ -61,6 +64,51 @@ public class AdminProfileController {
                                 adminId,
                                 request
                         )
+        );
+    }
+    /**
+     * Updates the password of the requested administrator.
+     *
+     * @param adminId administrator identifier
+     * @param request validated password information
+     * @return password update confirmation
+     */
+    @PatchMapping("/{adminId}/password")
+    public ResponseEntity<Map<String, Object>>
+    updatePassword(
+            @PathVariable
+            String adminId,
+
+            @Valid
+            @RequestBody
+            PasswordUpdateRequest request) {
+
+
+        adminService
+                .updateAdminPassword(
+                        adminId,
+                        request.getNewPassword()
+                );
+
+
+        Map<String, Object> response =
+                new LinkedHashMap<>();
+
+
+        response.put(
+                "message",
+                "Admin password updated successfully."
+        );
+
+
+        response.put(
+                "adminId",
+                adminId
+        );
+
+
+        return ResponseEntity.ok(
+                response
         );
     }
 }

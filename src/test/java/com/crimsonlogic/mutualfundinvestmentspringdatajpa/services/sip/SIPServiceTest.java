@@ -10,6 +10,7 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.mutualfund.I_
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.payment.I_PaymentService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.portfolio.I_PortfolioService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.transaction.I_TransactionService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -28,6 +29,8 @@ class SIPServiceTest {
     @Mock
     private SIPRepository sipRepository;
     @Mock
+    private AutoCloseable mocks;
+
     private I_InvestorService investorService;
     @Mock
     private I_MutualFundService mutualFundService;
@@ -44,7 +47,7 @@ class SIPServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
 
         sipService = new SIPService(
                 sipRepository,
@@ -55,6 +58,13 @@ class SIPServiceTest {
                 transactionService,
                 paymentService
         );
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

@@ -534,4 +534,22 @@ public class RedemptionService
                         )
                 );
     }
+
+    /**
+     * Retrieves redemptions belonging to investors
+     * with the requested active status.
+     *
+     * @param active investor account status
+     * @return matching redemption records
+     */
+    @Override
+    public List<Redemption>
+    getRedemptionsByInvestorStatus(
+            boolean active) {
+
+        return redemptionRepository
+                .findByInvestorActiveWithRelations(
+                        active
+                );
+    }
 }

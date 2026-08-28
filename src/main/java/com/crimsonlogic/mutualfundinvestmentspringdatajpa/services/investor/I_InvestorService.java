@@ -117,4 +117,15 @@ public interface I_InvestorService {
             String investorId,
             InvestorProfileUpdateRequest request
     );
+
+    /**
+     * Updates the password of an existing investor.
+     *
+     * @param investorId investor identifier
+     * @param newPassword new plain password to be hashed
+     */
+    void updateInvestorPassword(
+            String investorId,
+            String newPassword
+    );
 }

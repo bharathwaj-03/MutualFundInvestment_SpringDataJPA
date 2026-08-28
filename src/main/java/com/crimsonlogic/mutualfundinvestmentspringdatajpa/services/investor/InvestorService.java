@@ -695,4 +695,43 @@ public class InvestorService implements I_InvestorService {
                 nomineeResponse
         );
     }
+
+    /**
+     * Updates an investor password after hashing the
+     * supplied plain-text password.
+     *
+     * @param investorId investor identifier
+     * @param newPassword new plain password
+     */
+    @Override
+    public void updateInvestorPassword(
+            String investorId,
+            String newPassword) {
+
+
+        Investor investor =
+                investorRepository
+                        .findById(
+                                investorId
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Investor not found with id: "
+                                                        + investorId
+                                        )
+                        );
+
+
+        investor.setPassword(
+                PasswordUtil.hashPassword(
+                        newPassword
+                )
+        );
+
+
+        investorRepository.save(
+                investor
+        );
+    }
 }

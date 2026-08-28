@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -54,7 +55,7 @@ public class RedemptionController {
     @PostMapping("/calculate")
     public ResponseEntity<RedemptionResponse>
     calculate(
-            @RequestBody RedemptionRequest request,
+          @Valid  @RequestBody RedemptionRequest request,
             HttpServletRequest httpRequest)
             throws InsufficientUnitsException {
 
@@ -91,7 +92,7 @@ public class RedemptionController {
      */
     @PostMapping
     public ResponseEntity<RedemptionResponse> redeem(
-            @RequestBody RedemptionRequest request)
+      @Valid @RequestBody RedemptionRequest request)
             throws InvalidUnitsException {
 
         Redemption redemption =

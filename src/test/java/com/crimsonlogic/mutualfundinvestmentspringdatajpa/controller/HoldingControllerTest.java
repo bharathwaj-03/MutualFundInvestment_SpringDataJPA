@@ -4,6 +4,7 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.fund.EquityFund;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.portfolio.Holding;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.portfolio.Portfolio;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.holding.I_HoldingService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -98,4 +99,13 @@ class HoldingControllerTest {
                 .andExpect(jsonPath("$[0].profitOrLoss")
                         .value(1000));
     }
+
+    @AfterEach
+    void tearDown() {
+
+        reset(
+                holdingService
+        );
+    }
+
 }

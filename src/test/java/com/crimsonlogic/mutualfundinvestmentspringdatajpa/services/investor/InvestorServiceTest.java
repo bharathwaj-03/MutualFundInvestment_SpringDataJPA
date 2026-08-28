@@ -1,6 +1,4 @@
-package com.crimsonlogic
-        .mutualfundinvestmentspringdatajpa
-        .services.investor;
+package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor;
 
 
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.dto.request.InvestorRegistrationRequest;
@@ -14,6 +12,7 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.InvestorRep
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.NomineeRepository;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.portfolio.I_PortfolioService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.utilities.security.PasswordUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -44,6 +43,8 @@ class InvestorServiceTest {
             portfolioService;
 
 
+    private AutoCloseable mocks;
+
     private InvestorService
             investorService;
 
@@ -51,7 +52,7 @@ class InvestorServiceTest {
     @BeforeEach
     void setUp() {
 
-        MockitoAnnotations
+        mocks = MockitoAnnotations
                 .openMocks(this);
 
 
@@ -61,6 +62,13 @@ class InvestorServiceTest {
                         nomineeRepository,
                         portfolioService
                 );
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
 

@@ -10,6 +10,7 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.payment.UpiPayme
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.InvestorRepository;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.PaymentRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -28,13 +29,22 @@ class PaymentServiceTest {
     @Mock
     private InvestorRepository investorRepository;
 
+    private AutoCloseable mocks;
+
     private PaymentService paymentService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         paymentService =
                 new PaymentService(paymentRepository, investorRepository);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

@@ -1,6 +1,4 @@
-package com.crimsonlogic
-        .mutualfundinvestmentspringdatajpa
-        .services.mutualfund;
+package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.mutualfund;
 
 import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa
@@ -30,6 +28,7 @@ import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa
         .repository.NAVHistoryRepository;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +58,8 @@ class MutualFundServiceTest {
             navHistoryRepository;
 
 
+    private AutoCloseable mocks;
+
     private MutualFundService
             mutualFundService;
 
@@ -66,7 +67,7 @@ class MutualFundServiceTest {
     @BeforeEach
     void setUp() {
 
-        MockitoAnnotations
+        mocks = MockitoAnnotations
                 .openMocks(this);
 
 
@@ -75,6 +76,13 @@ class MutualFundServiceTest {
                         mutualFundRepository,
                         navHistoryRepository
                 );
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
 

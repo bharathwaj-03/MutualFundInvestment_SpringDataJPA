@@ -1,6 +1,4 @@
-package com.crimsonlogic
-        .mutualfundinvestmentspringdatajpa
-        .controller;
+package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 
 import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa
@@ -26,6 +24,7 @@ import com.crimsonlogic
         .mutualfundinvestmentspringdatajpa
         .services.investor.I_InvestorService;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -792,4 +791,14 @@ class UserLoginControllerTest {
                                 )
                 );
     }
+
+    @AfterEach
+    void tearDown() {
+
+        reset(
+                adminService,
+                investorService
+        );
+    }
+
 }

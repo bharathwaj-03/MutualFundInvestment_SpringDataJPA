@@ -4,6 +4,7 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotF
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.abstraction.Transaction;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.transaction.BuyTransaction;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.TransactionRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -20,12 +21,21 @@ class TransactionServiceTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    private AutoCloseable mocks;
+
     private TransactionService transactionService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         transactionService = new TransactionService(transactionRepository);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     private Transaction transaction(String id, double amount) {

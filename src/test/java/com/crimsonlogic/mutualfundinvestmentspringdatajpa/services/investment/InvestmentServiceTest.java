@@ -1,10 +1,7 @@
 package com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investment;
 
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.InvalidRequestException;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.exception.ResourceNotFoundException;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.abstraction.MutualFund;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.financeactivity.Investment;
-import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.fund.EquityFund;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.repository.InvestmentRepository;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.holding.I_HoldingService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.investor.I_InvestorService;
@@ -12,6 +9,7 @@ import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.mutualfund.I_
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.payment.I_PaymentService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.portfolio.I_PortfolioService;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.transaction.I_TransactionService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -22,13 +20,15 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 class InvestmentServiceTest {
 
     @Mock
     private InvestmentRepository investmentRepository;
     @Mock
+    private AutoCloseable mocks;
+
     private I_InvestorService investorService;
     @Mock
     private I_MutualFundService mutualFundService;
@@ -45,7 +45,7 @@ class InvestmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
 
         investmentService = new InvestmentService(
                 investmentRepository,
@@ -56,6 +56,13 @@ class InvestmentServiceTest {
                 holdingService,
                 portfolioService
         );
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

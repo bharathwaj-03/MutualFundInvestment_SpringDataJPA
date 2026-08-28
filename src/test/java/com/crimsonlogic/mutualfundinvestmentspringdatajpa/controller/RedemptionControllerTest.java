@@ -3,6 +3,7 @@ package com.crimsonlogic.mutualfundinvestmentspringdatajpa.controller;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.financeactivity.Redemption;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.model.user.Investor;
 import com.crimsonlogic.mutualfundinvestmentspringdatajpa.services.redemption.I_RedemptionService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -149,4 +150,13 @@ class RedemptionControllerTest {
                 .andExpect(jsonPath("$[0].redemptionId")
                         .value("RED001"));
     }
+
+    @AfterEach
+    void tearDown() {
+
+        reset(
+                redemptionService
+        );
+    }
+
 }
